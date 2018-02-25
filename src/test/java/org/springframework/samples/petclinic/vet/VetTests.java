@@ -76,7 +76,7 @@ public class VetTests {
         int preAddedNumber = vet.getNrOfSpecialties();
         Specialty radiology = new Specialty();
         vet.addSpecialty(radiology);
-        assertThat((vet.getSpecialtiesInternal()).contains(radiology));
+        assertThat(vet.getSpecialtiesInternal(), CoreMatchers.hasItems(radiology));
     }
 
     @Test
