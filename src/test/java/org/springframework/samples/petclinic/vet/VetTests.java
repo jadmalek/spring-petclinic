@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.petclinic.vet;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import org.springframework.beans.support.MutableSortDefinition;
@@ -24,7 +25,9 @@ import org.springframework.util.SerializationUtils;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.matchers.JUnitMatchers.*;
 
 /**
  * @author Dave Syer
@@ -59,7 +62,7 @@ public class VetTests {
         //vet.addSpecialty(kinesiology);
 
         List<Specialty> testList = vet.getSpecialties();
-        assertThat(testList).isEqualTo(vet.getSpecialties());
+        assertThat(testList, CoreMatchers.hasItems(radiology, urinalysis));
         testList.getClass().getSimpleName().equals("UnmodifiableCollection");
     }
 
