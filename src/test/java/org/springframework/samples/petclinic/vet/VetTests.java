@@ -59,10 +59,10 @@ public class VetTests {
         Specialty kinesiology = new Specialty();
         vet.addSpecialty(radiology);
         vet.addSpecialty(urinalysis);
-        //vet.addSpecialty(kinesiology);
+        vet.addSpecialty(kinesiology);
 
         List<Specialty> testList = vet.getSpecialties();
-        assertThat(testList, CoreMatchers.hasItems(radiology, urinalysis));
+        assertThat(testList, CoreMatchers.hasItems(radiology, urinalysis, kinesiology));
         testList.getClass().getSimpleName().equals("UnmodifiableCollection");
     }
 
