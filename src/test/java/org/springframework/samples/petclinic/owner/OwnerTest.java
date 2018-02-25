@@ -90,19 +90,19 @@ public class OwnerTest {
 	@Test
 	public void getPetsTest() {
 		Pet pet = new Pet();
+		pet.setName("Death");
 		List<Pet> list = new ArrayList<>();
 		list.add(pet);
 		ownerInstance.addPet(pet);
 		
-		assertEquals(list, ownerInstance.getPets());
-		assertEquals(1, list.size());
+		assertEquals(list.get(0).getName(), ownerInstance.getPets().iterator().next().getName()); 
 		
 		Pet pet2 = new Pet();
+		pet2.setName("Dirty");
 		list.add(pet2);
 		ownerInstance.addPet(pet2);
 		
-		assertEquals(list, ownerInstance.getPets());
-		assertEquals(2, list.size());
+		assertEquals(list.get(1).getName(), ownerInstance.getPets().get(1).getName());
 	}
 	
 	@Test
