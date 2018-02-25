@@ -76,8 +76,20 @@ public class VetTests {
         int preAddedNumber = vet.getNrOfSpecialties();
         Specialty radiology = new Specialty();
         vet.addSpecialty(radiology);
-        assertThat(vet.getNrOfSpecialties()).isEqualTo(++preAddedNumber);
         assertThat((vet.getSpecialtiesInternal()).contains(radiology));
+    }
+
+    @Test
+    public void testGetNrOfSpecialties(){
+        Vet vet = new Vet();
+        vet.setFirstName("Zaphod");
+        vet.setLastName("Beeblebrox");
+        vet.setId(123);
+
+        int preAddedNumber = vet.getNrOfSpecialties();
+        Specialty radiology = new Specialty();
+        vet.addSpecialty(radiology);
+        assertThat(vet.getNrOfSpecialties()).isEqualTo(++preAddedNumber);
     }
 
 }
