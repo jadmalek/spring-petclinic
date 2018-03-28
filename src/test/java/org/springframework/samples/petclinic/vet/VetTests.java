@@ -15,11 +15,19 @@
  */
 package org.springframework.samples.petclinic.vet;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import org.springframework.beans.support.MutableSortDefinition;
+import org.springframework.beans.support.PropertyComparator;
 import org.springframework.util.SerializationUtils;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.matchers.JUnitMatchers.*;
 
 /**
  * @author Dave Syer
@@ -38,6 +46,50 @@ public class VetTests {
         assertThat(other.getFirstName()).isEqualTo(vet.getFirstName());
         assertThat(other.getLastName()).isEqualTo(vet.getLastName());
         assertThat(other.getId()).isEqualTo(vet.getId());
+    }
+
+    @Test
+    public void testGetSpecialties(){
+        Vet vet = new Vet();
+        vet.setFirstName("Zaphod");
+        vet.setLastName("Beeblebrox");
+        vet.setId(123);
+        Specialty radiology = new Specialty();
+        Specialty urinalysis = new Specialty();
+        Specialty kinesiology = new Specialty();
+        vet.addSpecialty(radiology);
+        vet.addSpecialty(urinalysis);
+        vet.addSpecialty(kinesiology);
+
+        List<Specialty> testList = vet.getSpecialties();
+        assertThat(testList, CoreMatchers.hasItems(radiology, urinalysis, kinesiology));
+        testList.getClass().getSimpleName().equals("UnmodifiableCollection");
+    }
+
+    @Test
+    public void testAddSpecialty(){
+        Vet vet = new Vet();
+        vet.setFirstName("Zaphod");
+        vet.setLastName("Beeblebrox");
+        vet.setId(123);
+
+        int preAddedNumber = vet.getNrOfSpecialties();
+        Specialty radiology = new Specialty();
+        vet.addSpecialty(radiology);
+        assertThat(vet.getSpecialtiesInternal(), CoreMatchers.hasItems(radiology));
+    }
+
+    @Test
+    public void testGetNrOfSpecialties(){
+        Vet vet = new Vet();
+        vet.setFirstName("Zaphod");
+        vet.setLastName("Beeblebrox");
+        vet.setId(123);
+
+        int preAddedNumber = vet.getNrOfSpecialties();
+        Specialty radiology = new Specialty();
+        vet.addSpecialty(radiology);
+        assertThat(vet.getNrOfSpecialties()).isEqualTo(++preAddedNumber);
     }
 
 }

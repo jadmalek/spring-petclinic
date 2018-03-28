@@ -14,7 +14,6 @@ public class ProductionConfigurationTests {
 
     @Autowired
     private VetRepository vets;
-
     @Test
     public void testFindAll() throws Exception {
         vets.findAll();
