@@ -17,6 +17,6 @@ public class ProductionConfigurationTests {
     @Test
     public void testFindAll() throws Exception {
         vets.findAll();
-        vets.findAll(); // served from cache
+        //vets.findAll(); // served from cache
     }
 }

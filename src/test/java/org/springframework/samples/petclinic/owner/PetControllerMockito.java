@@ -51,7 +51,7 @@ public class PetControllerMockito {
 		//Should set the "pet" of the redirect
 		verify(model).put("pet", pet);
 		//Should not save the pet
-		verify(pets, times(0)).save(anyObject());
+		verify(pets, times(0)).save(pet);
 		//should redirect to create/update form
 		assertEquals(redirect, VIEWS_PETS_CREATE_OR_UPDATE_FORM);
 	}

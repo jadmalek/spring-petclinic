@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.samples.petclinic.owner;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,13 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.Map;
+
+import java.io.FileWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * @author Juergen Hoeller
@@ -131,5 +139,10 @@ class OwnerController {
         mav.addObject(this.owners.findById(ownerId));
         return mav;
     }
-
+    
+    //Implementation of method to move data from the owners table to a text file
+    public void forklift() {     	
+    }
+  
 }
+
