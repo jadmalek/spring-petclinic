@@ -15,9 +15,17 @@
  */
 package org.springframework.samples.petclinic.owner;
 
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import com.opencsv.CSVReader;
 import org.springframework.samples.petclinic.model.NamedEntity;
 
 /**
@@ -27,5 +35,63 @@ import org.springframework.samples.petclinic.model.NamedEntity;
 @Entity
 @Table(name = "types")
 public class PetType extends NamedEntity {
+	//Implementation of method to move data from pet types table to csv file
+    public void forklift() {
+    	String filename ="new-datastore/pet-types.csv";
+        try {
+            FileWriter fw = new FileWriter(filename);
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            String query = "select * from types";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                fw.append(rs.getString(1));
+                fw.append(',');
+                fw.append(rs.getString(2));
+                fw.append('\n');
+            }
+            fw.flush();
+            fw.close();
+            conn.close();
+            System.out.println("CSV file for the types table has been created successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    public int checkConsistency() {
+        int inconsistencies = 0;
+
+        try {
+            CSVReader reader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
+
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            String query = "select * from types";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            for(String[] actual : reader) {
+                rs.next();
+                for(int i=0;i<2;i++) {
+                    int columnIndex = i+1;
+                    if(!actual[i].equals(rs.getString(columnIndex))) {
+                    	System.out.println("Consistency Violation!\n" + 
+                				"\n\t expected = " + rs.getString(columnIndex)
+                				+ "\n\t actual = " + actual[i]);
+                        inconsistencies++;
+                    }
+                } 
+            }
+            
+            if (inconsistencies == 0) 
+            	System.out.println("No inconsistencies across former types table dataset.");
+            else
+            	System.out.println("Number of Inconsistencies: " + inconsistencies);
+            
+        }catch(Exception e) {
+            System.out.print("Error " + e.getMessage());
+        }
+        return inconsistencies;
+    }
 }

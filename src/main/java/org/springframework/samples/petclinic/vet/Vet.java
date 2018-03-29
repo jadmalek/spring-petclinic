@@ -15,6 +15,11 @@
  */
 package org.springframework.samples.petclinic.vet;
 
+import java.io.FileWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -75,5 +80,5 @@ public class Vet extends Person {
     public void addSpecialty(Specialty specialty) {
         getSpecialtiesInternal().add(specialty);
     }
-
+    
 }

@@ -15,11 +15,18 @@
  */
 package org.springframework.samples.petclinic.vet;
 
+import com.opencsv.CSVReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.Map;
 
 /**
@@ -29,6 +36,7 @@ import java.util.Map;
  * @author Arjen Poutsma
  */
 @Controller
+public
 class VetController {
 
     private final VetRepository vets;
@@ -55,6 +63,68 @@ class VetController {
         Vets vets = new Vets();
         vets.getVetList().addAll(this.vets.findAll());
         return vets;
+    }
+
+    //Implementation of method to move data from vets table to csv file
+    public void forklift() {
+    	String filename ="new-datastore/vets.csv";
+        try {
+            FileWriter fw = new FileWriter(filename);
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            String query = "select * from vets";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                fw.append(rs.getString(1));
+                fw.append(',');
+                fw.append(rs.getString(2));
+                fw.append(',');
+                fw.append(rs.getString(3));
+                fw.append('\n');
+            }
+            fw.flush();
+            fw.close();
+            conn.close();
+            System.out.println("CSV file for the vets table has been created successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int checkConsistency() {
+        int inconsistencies = 0;
+
+        try {
+            CSVReader reader = new CSVReader(new FileReader("new-datastore/vets.csv"));
+
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            String query = "select * from vets";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            for(String[] actual : reader) {
+                rs.next();
+                for(int i=0;i<3;i++) {
+                    int columnIndex = i+1;
+                    if(!actual[i].equals(rs.getString(columnIndex))) {
+                    	System.out.println("Consistency Violation!\n" + 
+                				"\n\t expected = " + rs.getString(columnIndex)
+                				+ "\n\t actual = " + actual[i]);
+                        inconsistencies++;
+                    }
+                }
+            }
+            
+            if (inconsistencies == 0) 
+            	System.out.println("No inconsistencies across former vets table dataset.");
+            else
+            	System.out.println("Number of Inconsistencies: " + inconsistencies);
+            
+        }catch(Exception e) {
+            System.out.print("Error " + e.getMessage());
+        }
+        return inconsistencies;
     }
 
 }
