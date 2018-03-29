@@ -15,7 +15,12 @@
  */
 package org.springframework.samples.petclinic.vet;
 
+import java.io.FileWriter;
 import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -30,5 +35,54 @@ import org.springframework.samples.petclinic.model.NamedEntity;
 @Entity
 @Table(name = "specialties")
 public class Specialty extends NamedEntity implements Serializable {
+	//Implementation of method to move data from the specialties table to csv file
+	public void forkliftSpecialties() { 
+		String filename ="new-datastore/specialties.csv";
+		try {
+			FileWriter fw = new FileWriter(filename);
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+			String query = "select * from specialties";
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				fw.append(rs.getString(1));
+				fw.append(',');
+				fw.append(rs.getString(2));
+				fw.append('\n');
+			}
+			fw.flush();
+			fw.close();
+			conn.close();
+			System.out.println("CSV File is created successfully.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	//Implementation of method to move data from the vet_specialties table to a csv file
+	public void forkliftVetSpecialties() { 
+		String filename ="new-datastore/vet-specialties.csv";
+		try {
+			FileWriter fw = new FileWriter(filename);
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+			String query = "select * from vet_specialties";
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				fw.append(rs.getString(1));
+				fw.append(',');
+				fw.append(rs.getString(2));
+				fw.append('\n');
+			}
+			fw.flush();
+			fw.close();
+			conn.close();
+			System.out.println("CSV File is created successfully.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 }

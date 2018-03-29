@@ -15,6 +15,12 @@
  */
 package org.springframework.samples.petclinic.owner;
 
+import java.io.FileWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -27,5 +33,28 @@ import org.springframework.samples.petclinic.model.NamedEntity;
 @Entity
 @Table(name = "types")
 public class PetType extends NamedEntity {
-
+	//Implementation of method to move data from pet types table to csv file
+    public void forklift() { 
+    	String filename ="new-datastore/pet-types.csv";
+        try {
+            FileWriter fw = new FileWriter(filename);
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            String query = "select * from types";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                fw.append(rs.getString(1));
+                fw.append(',');
+                fw.append(rs.getString(2));
+                fw.append('\n');
+            }
+            fw.flush();
+            fw.close();
+            conn.close();
+            System.out.println("CSV File is created successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -15,6 +15,11 @@
  */
 package org.springframework.samples.petclinic.visit;
 
+import java.io.FileWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.Date;
 
 import javax.persistence.Column;
