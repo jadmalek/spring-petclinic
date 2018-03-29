@@ -191,19 +191,19 @@ class OwnerController {
                 for(int i=0;i<6;i++) {
                     int columnIndex = i+1;
                     if(!actual[i].equals(rs.getString(columnIndex))) {
-                    	System.out.println("Consistency Violation!\n" + 
+                    	System.out.println("Consistency Violation!\n" +
                 				"\n\t expected = " + rs.getString(columnIndex)
                 				+ "\n\t actual = " + actual[i]);
                         inconsistencies++;
                     }
                 }
             }
-            
-            if (inconsistencies == 0) 
+
+            if (inconsistencies == 0)
             	System.out.println("No inconsistencies across former owners table dataset.");
             else
             	System.out.println("Number of Inconsistencies: " + inconsistencies);
-            
+
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }

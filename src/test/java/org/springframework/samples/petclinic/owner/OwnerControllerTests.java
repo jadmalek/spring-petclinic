@@ -38,7 +38,6 @@ public class OwnerControllerTests {
 
     @MockBean
     private OwnerRepository owners;
-
     private Owner george;
 
     @Before
