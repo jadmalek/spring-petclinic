@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.petclinic.owner;
 
+import com.opencsv.CSVReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.petclinic.visit.Visit;
 import org.springframework.samples.petclinic.visit.VisitRepository;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -92,9 +94,9 @@ class VisitController {
             return "redirect:/owners/{ownerId}";
         }
     }
-    
+
     //Implementation of method to move data from the visits table to a csv file
-    public void forklift() { 
+    public void forklift() {
     	String filename ="new-datastore/visits.csv";
         try {
             FileWriter fw = new FileWriter(filename);
@@ -120,6 +122,31 @@ class VisitController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public int checkConsistency() {
+        int inconsistencies = 0;
+
+        try {
+            CSVReader reader = new CSVReader(new FileReader("new-datastore/visits.csv"));
+
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            String query = "select * from visits";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            for(String[] actual : reader) {
+                rs.next();
+                for(int i=0;i<4;i++) {
+                    int columnIndex = i+1;
+                    if(!actual[i].equals(rs.getString(columnIndex)))
+                        inconsistencies++;
+                }
+            }
+        }catch(Exception e) {
+            System.out.print("Error " + e.getMessage());
+        }
+        return inconsistencies;
     }
 
 }

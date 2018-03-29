@@ -3,6 +3,7 @@ package org.springframework.samples.petclinic.owner;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
 import org.springframework.samples.petclinic.owner.OwnerController;
 import org.springframework.samples.petclinic.owner.OwnerRepository;
 import org.springframework.samples.petclinic.vet.VetRepository;
@@ -17,12 +18,12 @@ public class TestMigrationConsistencyChecking {
     private VetRepository vets;
     private PetType petType;
     private Specialty specialty;
-    
+
     private OwnerController ownerController;
     private PetController petController;
     private VisitController visitController;
     private VetController vetController;
-    
+
     @Before
     public void setup() {
     	ownerController = new OwnerController(owners);
@@ -32,7 +33,7 @@ public class TestMigrationConsistencyChecking {
     	petType = new PetType();
     	specialty = new Specialty();;
     }
-    
+
     @Test
 	public void test() {
 		//Forklifting of data from owners, pets, vets, visits, types, specialties and vet-specialties tables into csv files
@@ -43,18 +44,23 @@ public class TestMigrationConsistencyChecking {
 		petType.forklift();
 		specialty.forkliftSpecialties();
 		specialty.forkliftVetSpecialties();
-		
+
 		//check consistency of new with old (incremental replication)
-		
+        assertEquals(0,ownerController.checkConsistency());
+        assertEquals(0,petController.checkConsistency());
+        assertEquals(0,visitController.checkConsistency());
+        assertEquals(0,vetController.checkConsistency());
+        assertEquals(0,petType.checkConsistency());
+
 		//shadow writes: any changes are written directly to old
 		//consistency should be checked after each write
-		
+
 		//shadow Reads for validation (read will access both old and new)
 		// old will provide response
 		// consistency check that old == new
-		
+
 		//read and write from new datastore
-		
+
 		//long termn consistency checker
 	}
 

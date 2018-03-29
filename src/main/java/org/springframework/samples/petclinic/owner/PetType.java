@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.petclinic.owner;
 
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -24,6 +25,7 @@ import java.sql.Statement;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import com.opencsv.CSVReader;
 import org.springframework.samples.petclinic.model.NamedEntity;
 
 /**
@@ -34,7 +36,7 @@ import org.springframework.samples.petclinic.model.NamedEntity;
 @Table(name = "types")
 public class PetType extends NamedEntity {
 	//Implementation of method to move data from pet types table to csv file
-    public void forklift() { 
+    public void forklift() {
     	String filename ="new-datastore/pet-types.csv";
         try {
             FileWriter fw = new FileWriter(filename);
@@ -56,5 +58,30 @@ public class PetType extends NamedEntity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public int checkConsistency() {
+        int inconsistencies = 0;
+
+        try {
+            CSVReader reader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
+
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            String query = "select * from types";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            for(String[] actual : reader) {
+                rs.next();
+                for(int i=0;i<2;i++) {
+                    int columnIndex = i+1;
+                    if(!actual[i].equals(rs.getString(columnIndex)))
+                        inconsistencies++;
+                }
+            }
+        }catch(Exception e) {
+            System.out.print("Error " + e.getMessage());
+        }
+        return inconsistencies;
     }
 }
