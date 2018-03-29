@@ -77,10 +77,20 @@ public class Specialty extends NamedEntity implements Serializable {
                 rs.next();
                 for(int i=0;i<2;i++) {
                     int columnIndex = i+1;
-                    if(!actual[i].equals(rs.getString(columnIndex)))
+                    if(!actual[i].equals(rs.getString(columnIndex))) {
+                    	System.out.println("Consistency Violation!\n" + 
+                				"\n\t expected = " + rs.getString(columnIndex)
+                				+ "\n\t actual = " + actual[i]);
                         inconsistencies++;
+                    }
                 }
             }
+            
+            if (inconsistencies == 0) 
+            	System.out.println("No inconsistencies across former specialties table dataset.");
+            else
+            	System.out.println("Number of Inconsistencies: " + inconsistencies);
+            
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
@@ -127,10 +137,20 @@ public class Specialty extends NamedEntity implements Serializable {
                 rs.next();
                 for(int i=0;i<2;i++) {
                     int columnIndex = i+1;
-                    if(!actual[i].equals(rs.getString(columnIndex)))
+                    if(!actual[i].equals(rs.getString(columnIndex))) {
+                    	System.out.println("Consistency Violation!\n" + 
+                				"\n\t expected = " + rs.getString(columnIndex)
+                				+ "\n\t actual = " + actual[i]);
                         inconsistencies++;
+                    }
                 }
             }
+            
+            if (inconsistencies == 0) 
+            	System.out.println("No inconsistencies across former vet_specialties table dataset.");
+            else
+            	System.out.println("Number of Inconsistencies: " + inconsistencies);
+            
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }

@@ -63,7 +63,7 @@ public class TestMigrationConsistencyChecking {
 
 		//read and write from new datastore
 
-		//long termn consistency checker
+		//long term consistency checker
 	}
 
 }
