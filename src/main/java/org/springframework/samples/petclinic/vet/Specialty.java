@@ -54,7 +54,7 @@ public class Specialty extends NamedEntity implements Serializable {
 			fw.flush();
 			fw.close();
 			conn.close();
-			System.out.println("CSV File is created successfully.");
+			System.out.println("CSV file for the specialties table has been created successfully.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -79,7 +79,7 @@ public class Specialty extends NamedEntity implements Serializable {
 			fw.flush();
 			fw.close();
 			conn.close();
-			System.out.println("CSV File is created successfully.");
+			System.out.println("CSV file for the vet_specialties table has been created successfully.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

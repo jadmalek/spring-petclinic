@@ -116,7 +116,7 @@ class VisitController {
             fw.flush();
             fw.close();
             conn.close();
-            System.out.println("CSV File is created successfully.");
+            System.out.println("CSV file for the visits table has been created successfully.");
         } catch (Exception e) {
             e.printStackTrace();
         }
