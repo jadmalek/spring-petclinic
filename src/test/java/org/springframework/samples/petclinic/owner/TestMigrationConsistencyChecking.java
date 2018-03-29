@@ -51,6 +51,8 @@ public class TestMigrationConsistencyChecking {
         assertEquals(0,visitController.checkConsistency());
         assertEquals(0,vetController.checkConsistency());
         assertEquals(0,petType.checkConsistency());
+        assertEquals(0,specialty.checkSpecialtiesConsistency());
+        assertEquals(0,specialty.checkVetSpecialtiesConsistency());
 
 		//shadow writes: any changes are written directly to old
 		//consistency should be checked after each write

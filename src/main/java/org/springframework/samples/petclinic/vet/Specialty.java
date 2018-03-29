@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.petclinic.vet;
 
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.Serializable;
 import java.sql.Connection;
@@ -25,6 +26,7 @@ import java.sql.Statement;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import com.opencsv.CSVReader;
 import org.springframework.samples.petclinic.model.NamedEntity;
 
 /**
@@ -36,7 +38,7 @@ import org.springframework.samples.petclinic.model.NamedEntity;
 @Table(name = "specialties")
 public class Specialty extends NamedEntity implements Serializable {
 	//Implementation of method to move data from the specialties table to csv file
-	public void forkliftSpecialties() { 
+	public void forkliftSpecialties() {
 		String filename ="new-datastore/specialties.csv";
 		try {
 			FileWriter fw = new FileWriter(filename);
@@ -60,8 +62,33 @@ public class Specialty extends NamedEntity implements Serializable {
 		}
 	}
 
+    public int checkSpecialtiesConsistency() {
+        int inconsistencies = 0;
+
+        try {
+            CSVReader reader = new CSVReader(new FileReader("new-datastore/specialties.csv"));
+
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            String query = "select * from specialties";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            for(String[] actual : reader) {
+                rs.next();
+                for(int i=0;i<2;i++) {
+                    int columnIndex = i+1;
+                    if(!actual[i].equals(rs.getString(columnIndex)))
+                        inconsistencies++;
+                }
+            }
+        }catch(Exception e) {
+            System.out.print("Error " + e.getMessage());
+        }
+        return inconsistencies;
+    }
+
 	//Implementation of method to move data from the vet_specialties table to a csv file
-	public void forkliftVetSpecialties() { 
+	public void forkliftVetSpecialties() {
 		String filename ="new-datastore/vet-specialties.csv";
 		try {
 			FileWriter fw = new FileWriter(filename);
@@ -84,5 +111,30 @@ public class Specialty extends NamedEntity implements Serializable {
 			e.printStackTrace();
 		}
 	}
+
+    public int checkVetSpecialtiesConsistency() {
+        int inconsistencies = 0;
+
+        try {
+            CSVReader reader = new CSVReader(new FileReader("new-datastore/vet-specialties.csv"));
+
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            String query = "select * from vet_specialties";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            for(String[] actual : reader) {
+                rs.next();
+                for(int i=0;i<2;i++) {
+                    int columnIndex = i+1;
+                    if(!actual[i].equals(rs.getString(columnIndex)))
+                        inconsistencies++;
+                }
+            }
+        }catch(Exception e) {
+            System.out.print("Error " + e.getMessage());
+        }
+        return inconsistencies;
+    }
 
 }
