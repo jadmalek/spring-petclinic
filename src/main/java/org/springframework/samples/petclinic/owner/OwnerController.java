@@ -36,6 +36,7 @@ import java.util.Map;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -208,6 +209,82 @@ class OwnerController {
             System.out.print("Error " + e.getMessage());
         }
         return inconsistencies;
+    }
+
+    public void writeToMySqlDataBase(String firstName, String lastName, String address, 
+    		String city, String telephone) throws Exception {
+
+    	Class.forName("com.mysql.jdbc.Driver").newInstance();
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+
+        // the mysql insert statement
+        String query = " INSERT into owners (first_name, last_name, address, city, telephone)"
+          + " Values (?, ?, ?, ?, ?)";
+
+        // Create the MySql insert query
+        PreparedStatement preparedStmt = conn.prepareStatement(query);
+        preparedStmt.setString(1, firstName);
+        preparedStmt.setString(2, lastName);
+        preparedStmt.setString(3, address);
+        preparedStmt.setString(4, city);
+        preparedStmt.setString(5, telephone);
+
+        // execute the preparedstatement
+        preparedStmt.execute();
+    }
+
+    public void writeToFile(String firstName, String lastName, String address, String city, String telephone) {
+    	String filename ="new-datastore/owners.csv";
+        try {
+            FileWriter fw = new FileWriter(filename, true);
+
+            writeToMySqlDataBase(firstName, lastName, address, city, telephone);
+            String ownerId = retrieveIdOfOwnerFromDb(firstName, lastName, address, city, telephone);
+
+            //Append the new owner to the csv
+            fw.append(ownerId);
+            fw.append(',');
+            fw.append(firstName);
+            fw.append(',');
+            fw.append(lastName);
+            fw.append(',');
+            fw.append(address);
+            fw.append(',');
+            fw.append(city);
+            fw.append(',');
+            fw.append(telephone);
+            fw.append(',');
+            fw.append('\n');
+            fw.flush();
+            fw.close();
+
+            System.out.println("Shadow write complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private String retrieveIdOfOwnerFromDb(String firstName, String lastName, 
+    										String address, String city, String telephone) throws Exception{
+    	
+    	Class.forName("com.mysql.jdbc.Driver").newInstance();
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+        //Retrieve the id created
+        String selectQuery= "SELECT id FROM owners WHERE first_name=?" +
+        					" AND last_name=? AND address=? AND city=? AND telephone=?";
+
+        PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
+        preparedSelect.setString(1, firstName);
+        preparedSelect.setString(2, lastName);
+        preparedSelect.setString(3, address);
+        preparedSelect.setString(4, city);
+        preparedSelect.setString(5, telephone);
+
+        ResultSet rs = preparedSelect.executeQuery();
+        if(rs.next()){
+        	return Integer.toString(rs.getInt("id"));
+        }
+        return null;
     }
 
 }

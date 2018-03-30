@@ -56,6 +56,8 @@ public class TestMigrationConsistencyChecking {
 
 		//shadow writes: any changes are written directly to old
 		//consistency should be checked after each write
+        ownerController.writeToFile("Timmy", "Turner", "123 Fairies", "Dimsdale", "555-555-5555");
+        assertEquals(0, ownerController.checkConsistency());
 
 		//shadow Reads for validation (read will access both old and new)
 		// old will provide response
