@@ -29,10 +29,13 @@ import javax.validation.Valid;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Collection;
+import java.util.Date;
+
 
 /**
  * @author Juergen Hoeller
@@ -43,80 +46,80 @@ import java.util.Collection;
 @RequestMapping("/owners/{ownerId}")
 class PetController {
 
-    private static final String VIEWS_PETS_CREATE_OR_UPDATE_FORM = "pets/createOrUpdatePetForm";
-    private final PetRepository pets;
-    private final OwnerRepository owners;
+	private static final String VIEWS_PETS_CREATE_OR_UPDATE_FORM = "pets/createOrUpdatePetForm";
+	private final PetRepository pets;
+	private final OwnerRepository owners;
 
-    @Autowired
-    public PetController(PetRepository pets, OwnerRepository owners) {
-        this.pets = pets;
-        this.owners = owners;
-    }
+	@Autowired
+	public PetController(PetRepository pets, OwnerRepository owners) {
+		this.pets = pets;
+		this.owners = owners;
+	}
 
-    @ModelAttribute("types")
-    public Collection<PetType> populatePetTypes() {
-        return this.pets.findPetTypes();
-    }
+	@ModelAttribute("types")
+	public Collection<PetType> populatePetTypes() {
+		return this.pets.findPetTypes();
+	}
 
-    @ModelAttribute("owner")
-    public Owner findOwner(@PathVariable("ownerId") int ownerId) {
-        return this.owners.findById(ownerId);
-    }
+	@ModelAttribute("owner")
+	public Owner findOwner(@PathVariable("ownerId") int ownerId) {
+		return this.owners.findById(ownerId);
+	}
 
-    @InitBinder("owner")
-    public void initOwnerBinder(WebDataBinder dataBinder) {
-        dataBinder.setDisallowedFields("id");
-    }
+	@InitBinder("owner")
+	public void initOwnerBinder(WebDataBinder dataBinder) {
+		dataBinder.setDisallowedFields("id");
+	}
 
-    @InitBinder("pet")
-    public void initPetBinder(WebDataBinder dataBinder) {
-        dataBinder.setValidator(new PetValidator());
-    }
+	@InitBinder("pet")
+	public void initPetBinder(WebDataBinder dataBinder) {
+		dataBinder.setValidator(new PetValidator());
+	}
 
-    @GetMapping("/pets/new")
-    public String initCreationForm(Owner owner, ModelMap model) {
-        Pet pet = new Pet();
-        owner.addPet(pet);
-        model.put("pet", pet);
-        return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
-    }
+	@GetMapping("/pets/new")
+	public String initCreationForm(Owner owner, ModelMap model) {
+		Pet pet = new Pet();
+		owner.addPet(pet);
+		model.put("pet", pet);
+		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
+	}
 
-    @PostMapping("/pets/new")
-    public String processCreationForm(Owner owner, @Valid Pet pet, BindingResult result, ModelMap model) {
-        if (StringUtils.hasLength(pet.getName()) && pet.isNew() && owner.getPet(pet.getName(), true) != null){
-            result.rejectValue("name", "duplicate", "already exists");
-        }
-        owner.addPet(pet);
-        if (result.hasErrors()) {
-            model.put("pet", pet);
-            return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
-        } else {
-            this.pets.save(pet);
-            return "redirect:/owners/{ownerId}";
-        }
-    }
+	@PostMapping("/pets/new")
+	public String processCreationForm(Owner owner, @Valid Pet pet, BindingResult result, ModelMap model) {
+		if (StringUtils.hasLength(pet.getName()) && pet.isNew() && owner.getPet(pet.getName(), true) != null) {
+			result.rejectValue("name", "duplicate", "already exists");
+		}
+		owner.addPet(pet);
+		if (result.hasErrors()) {
+			model.put("pet", pet);
+			return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
+		} else {
+			this.pets.save(pet);
+			return "redirect:/owners/{ownerId}";
+		}
+	}
 
-    @GetMapping("/pets/{petId}/edit")
-    public String initUpdateForm(@PathVariable("petId") int petId, ModelMap model) {
-        Pet pet = this.pets.findById(petId);
-        model.put("pet", pet);
-        return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
-    }
+	@GetMapping("/pets/{petId}/edit")
+	public String initUpdateForm(@PathVariable("petId") int petId, ModelMap model) {
+		Pet pet = this.pets.findById(petId);
+		model.put("pet", pet);
+		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
+	}
 
-    @PostMapping("/pets/{petId}/edit")
-    public String processUpdateForm(@Valid Pet pet, BindingResult result, Owner owner, ModelMap model) {
-        if (result.hasErrors()) {
-            pet.setOwner(owner);
-            model.put("pet", pet);
-            return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
-        } else {
-            owner.addPet(pet);
-            this.pets.save(pet);
-            return "redirect:/owners/{ownerId}";
-        }
-    }
+	@PostMapping("/pets/{petId}/edit")
+	public String processUpdateForm(@Valid Pet pet, BindingResult result, Owner owner, ModelMap model) {
+		if (result.hasErrors()) {
+			pet.setOwner(owner);
+			model.put("pet", pet);
+			return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
+		} else {
+			owner.addPet(pet);
+			this.pets.save(pet);
+			return "redirect:/owners/{ownerId}";
+		}
+	}
 
-  //Implementation of method to move data from pets table to csv file
+	//Implementation of method to move data from pets table to csv file
     public void forklift() {
     	String filename ="new-datastore/pets.csv";
         try {
@@ -181,5 +184,75 @@ class PetController {
         }
         return inconsistencies;
     }
+	
+    public void writeToMySqlDataBase(String name, Date birthDate, int typeId, int ownerId) throws Exception {
+
+    	Class.forName("com.mysql.jdbc.Driver").newInstance();
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+
+        // the mysql insert statement
+        String query = " INSERT into pets (name, birthDate, typeId, ownerId)"
+          + " Values (?, ?, ?, ?)";
+
+        // Create the MySql insert query
+        PreparedStatement preparedStmt = conn.prepareStatement(query);
+        preparedStmt.setString(1, name);
+        preparedStmt.setDate(2, (java.sql.Date) birthDate);
+        preparedStmt.setInt(3, typeId);
+        preparedStmt.setInt(4, ownerId);
+
+        // execute the prepared statement
+        preparedStmt.execute();
+    }
+
+	public void writeToFile(String name, Date birthDate, int typeId, int ownerId) {
+		String filename = "new-datastore/owners.csv";
+		try {
+			FileWriter fw = new FileWriter(filename, true);
+
+			writeToMySqlDataBase(name, birthDate, typeId, ownerId);
+			String petId = retrieveIdOfOwnerFromDb(name, birthDate, typeId, ownerId);
+
+			// Append the new owner to the csv
+			fw.append(petId);
+			fw.append(',');
+			fw.append(name);
+			fw.append(',');
+			fw.append(birthDate.toString());
+			fw.append(',');
+			fw.append(Integer.toString(typeId));
+			fw.append(',');
+			fw.append(Integer.toString(ownerId));
+			fw.append(',');
+			fw.append('\n');
+			fw.flush();
+			fw.close();
+
+			System.out.println("Shadow write complete.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private String retrieveIdOfOwnerFromDb(String name, Date birthDate, int typeId, int ownerId) throws Exception {
+
+		Class.forName("com.mysql.jdbc.Driver").newInstance();
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+		// Retrieve the id created
+		String selectQuery = "SELECT id FROM pets WHERE first_name=?"
+				+ " AND birth_date=? AND type_id=? AND owner_id=?";
+
+		PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
+		preparedSelect.setString(1, name);
+		preparedSelect.setDate(2, (java.sql.Date) birthDate);
+		preparedSelect.setInt(3, typeId);
+		preparedSelect.setInt(4, ownerId);
+
+		ResultSet rs = preparedSelect.executeQuery();
+		if (rs.next()) {
+			return Integer.toString(rs.getInt("id"));
+		}
+		return null;
+	}
 
 }
