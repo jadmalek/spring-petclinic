@@ -258,7 +258,7 @@ class OwnerController {
             fw.flush();
             fw.close();
 
-            System.out.println("Shadow write complete.");
+            System.out.println("Shadow write for owner complete.");
         } catch (Exception e) {
             e.printStackTrace();
         }

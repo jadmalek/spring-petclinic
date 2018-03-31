@@ -19,9 +19,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -94,4 +94,59 @@ public class PetType extends NamedEntity {
         }
         return inconsistencies;
     }
+    
+    public void writeToMySqlDataBase(String name) throws Exception {
+
+    	Class.forName("com.mysql.jdbc.Driver").newInstance();
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+
+        String query = " INSERT into types (name)"
+          + " Values (?)";
+
+        PreparedStatement preparedStmt = conn.prepareStatement(query);
+        preparedStmt.setString(1, name);
+
+        // execute the preparedstatement
+        preparedStmt.execute();
+    }
+
+    public void writeToFile(String name) {
+    	String filename ="new-datastore/pet-types.csv";
+        try {
+            FileWriter fw = new FileWriter(filename, true);
+
+            writeToMySqlDataBase(name);
+            String typeId = retrieveIdOfTypeFromDb(name);
+
+            //Append the new type to the csv
+            fw.append(typeId);
+            fw.append(',');
+            fw.append(name);
+            fw.append('\n');
+            fw.flush();
+            fw.close();
+
+            System.out.println("Shadow write for types complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private String retrieveIdOfTypeFromDb(String name) throws Exception{
+
+    	Class.forName("com.mysql.jdbc.Driver").newInstance();
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+
+        String selectQuery= "SELECT id FROM types WHERE name=?";
+
+        PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
+        preparedSelect.setString(1, name);
+
+        ResultSet rs = preparedSelect.executeQuery();
+        if(rs.next()){
+        	return Integer.toString(rs.getInt("id"));
+        }
+        return null;
+    }
+
 }
