@@ -4,6 +4,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+import java.util.Date;
+
 import org.springframework.samples.petclinic.owner.OwnerController;
 import org.springframework.samples.petclinic.owner.OwnerRepository;
 import org.springframework.samples.petclinic.vet.VetRepository;
@@ -56,8 +59,13 @@ public class TestMigrationConsistencyChecking {
 
 		//shadow writes: any changes are written directly to old
 		//consistency should be checked after each write
-        ownerController.writeToFile("Timmy", "Turner", "123 Fairies", "Dimsdale", "555-555-5555");
+        ownerController.writeToFile("Bob", "Bobby", "808 Roberts", "Bobbytown", "545-555-5555");
+        petType.writeToFile("Doggo");
+        visitController.writeToFile(1, new Date(), "An annual checkup");
         assertEquals(0, ownerController.checkConsistency());
+        assertEquals(0, petType.checkConsistency());
+        assertEquals(0, visitController.checkConsistency());
+        
 
 		//shadow Reads for validation (read will access both old and new)
 		// old will provide response

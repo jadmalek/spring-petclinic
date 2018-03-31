@@ -30,8 +30,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -158,5 +162,68 @@ class VisitController {
         }
         return inconsistencies;
     }
+    
+    public void writeToMySqlDataBase(int petId, java.sql.Date visitDate, String description) throws Exception {
 
+    	Class.forName("com.mysql.jdbc.Driver").newInstance();
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+
+        String query = " INSERT into visits (pet_id, visit_date, description)"
+          + " Values (?, ?, ?)";
+
+        PreparedStatement preparedStmt = conn.prepareStatement(query);
+        preparedStmt.setInt(1, petId);
+        preparedStmt.setDate(2, visitDate);
+        preparedStmt.setString(3, description);
+
+        preparedStmt.execute();
+    }
+
+    public void writeToFile(int petId, Date visitDate, String description) {
+    	String filename ="new-datastore/visits.csv";
+        try {
+            FileWriter fw = new FileWriter(filename, true);
+
+            //Convert the java.util.Date to java.sql.Date
+            java.sql.Date sqlDate = new java.sql.Date(visitDate.getTime());
+
+            writeToMySqlDataBase(petId, sqlDate, description);
+            String visitId = retrieveIdOfVisitFromDb(petId, sqlDate, description);
+
+            //Append the new visit to the csv
+            fw.append(visitId);
+            fw.append(',');
+            fw.append(Integer.toString(petId));
+            fw.append(',');
+            fw.append(sqlDate.toString());
+            fw.append(',');
+            fw.append(description);
+            fw.append('\n');
+            fw.flush();
+            fw.close();
+
+            System.out.println("Shadow write for visits complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private String retrieveIdOfVisitFromDb(int petId, java.sql.Date visitDate, String description) throws Exception{
+    	Class.forName("com.mysql.jdbc.Driver").newInstance();
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+
+        //Retrieve the id created
+        String selectQuery= "SELECT id FROM visits WHERE pet_id=? AND visit_date =? AND description =?";
+
+        PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
+        preparedSelect.setInt(1, petId);
+        preparedSelect.setDate(2, visitDate);
+        preparedSelect.setString(3, description);
+
+        ResultSet rs = preparedSelect.executeQuery();
+        if(rs.next()){
+        	return Integer.toString(rs.getInt("id"));
+        }
+        return null;
+    }
 }
