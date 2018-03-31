@@ -194,7 +194,9 @@ class OwnerController {
                     	System.out.println("Consistency Violation!\n" +
                 				"\n\t expected = " + rs.getString(columnIndex)
                 				+ "\n\t actual = " + actual[i]);
-                        inconsistencies++;
+                        //fix inconsistency
+                    	actual[i] = rs.getString(columnIndex);
+                    	inconsistencies++;
                     }
                 }
             }
