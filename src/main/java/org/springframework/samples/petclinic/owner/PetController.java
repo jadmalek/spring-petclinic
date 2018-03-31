@@ -211,7 +211,7 @@ class PetController {
 			FileWriter fw = new FileWriter(filename, true);
 
 			writeToMySqlDataBase(name, birthDate, typeId, ownerId);
-			String petId = retrieveIdOfOwnerFromDb(name, birthDate, typeId, ownerId);
+			String petId = retrieveIdOfPetsFromDb(name, birthDate, typeId, ownerId);
 
 			// Append the new owner to the csv
 			fw.append(petId);
@@ -234,7 +234,7 @@ class PetController {
 		}
 	}
 
-	private String retrieveIdOfOwnerFromDb(String name, Date birthDate, int typeId, int ownerId) throws Exception {
+	private String retrieveIdOfPetsFromDb(String name, Date birthDate, int typeId, int ownerId) throws Exception {
 
 		Class.forName("com.mysql.jdbc.Driver").newInstance();
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
