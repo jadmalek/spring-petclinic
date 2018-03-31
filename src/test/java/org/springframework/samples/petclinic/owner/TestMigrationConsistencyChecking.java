@@ -67,7 +67,9 @@ public class TestMigrationConsistencyChecking {
         assertEquals(0, petController.checkConsistency());
         assertEquals(0, petType.checkConsistency());
         assertEquals(0, visitController.checkConsistency());
-        
+        specialty.writeToFile("Specialty1");
+        assertEquals(0, specialty.checkConsistency());
+
 
 		//shadow Reads for validation (read will access both old and new)
 		// old will provide response
