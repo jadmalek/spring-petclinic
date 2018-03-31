@@ -41,7 +41,7 @@ public class PetType extends NamedEntity {
         try {
             FileWriter fw = new FileWriter(filename);
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "penis");
             String query = "select * from types";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
@@ -66,7 +66,7 @@ public class PetType extends NamedEntity {
         try {
             CSVReader reader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
 
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "penis");
             String query = "select * from types";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);

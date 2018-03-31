@@ -149,7 +149,7 @@ class OwnerController {
         try {
             FileWriter fw = new FileWriter(filename);
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "penis");
             String query = "select * from owners";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
@@ -182,7 +182,7 @@ class OwnerController {
         try {
             CSVReader reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
 
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "penis");
             String query = "select * from owners";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
@@ -215,7 +215,7 @@ class OwnerController {
     		String city, String telephone) throws Exception {
 
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "penis");
 
         // the mysql insert statement
         String query = " INSERT into owners (first_name, last_name, address, city, telephone)"
@@ -268,7 +268,7 @@ class OwnerController {
     										String address, String city, String telephone) throws Exception{
     	
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "penis");
         //Retrieve the id created
         String selectQuery= "SELECT id FROM owners WHERE first_name=?" +
         					" AND last_name=? AND address=? AND city=? AND telephone=?";

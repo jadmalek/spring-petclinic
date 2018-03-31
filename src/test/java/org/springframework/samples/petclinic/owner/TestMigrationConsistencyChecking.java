@@ -60,9 +60,11 @@ public class TestMigrationConsistencyChecking {
 		//shadow writes: any changes are written directly to old
 		//consistency should be checked after each write
         ownerController.writeToFile("Bob", "Bobby", "808 Roberts", "Bobbytown", "545-555-5555");
+        petController.writeToFile("Buddy", new Date(), 0, 0);
         petType.writeToFile("Doggo");
         visitController.writeToFile(1, new Date(), "An annual checkup");
         assertEquals(0, ownerController.checkConsistency());
+        assertEquals(0, petController.checkConsistency());
         assertEquals(0, petType.checkConsistency());
         assertEquals(0, visitController.checkConsistency());
         
