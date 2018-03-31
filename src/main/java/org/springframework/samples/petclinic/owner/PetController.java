@@ -206,7 +206,7 @@ class PetController {
     }
 
 	public void writeToFile(String name, Date birthDate, int typeId, int ownerId) {
-		String filename = "new-datastore/owners.csv";
+		String filename = "new-datastore/pets.csv";
 		try {
 			FileWriter fw = new FileWriter(filename, true);
 
