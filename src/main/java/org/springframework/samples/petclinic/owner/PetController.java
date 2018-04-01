@@ -187,19 +187,19 @@ class PetController {
         return inconsistencies;
     }
 	
-    public void writeToMySqlDataBase(String name, Date birthDate, int typeId, int ownerId) throws Exception {
+    public void writeToMySqlDataBase(String name, java.sql.Date birthDate, int typeId, int ownerId) throws Exception {
 
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
 
         // the mysql insert statement
-        String query = " INSERT into pets (name, birthDate, typeId, ownerId)"
+        String query = " INSERT into pets (name, birth_date, type_id, owner_id)"
           + " Values (?, ?, ?, ?)";
 
         // Create the MySql insert query
         PreparedStatement preparedStmt = conn.prepareStatement(query);
         preparedStmt.setString(1, name);
-        preparedStmt.setDate(2, (java.sql.Date) birthDate);
+        preparedStmt.setDate(2, birthDate);
         preparedStmt.setInt(3, typeId);
         preparedStmt.setInt(4, ownerId);
 
@@ -211,16 +211,18 @@ class PetController {
 		String filename = "new-datastore/pets.csv";
 		try {
 			FileWriter fw = new FileWriter(filename, true);
-
-			writeToMySqlDataBase(name, birthDate, typeId, ownerId);
-			String petId = retrieveIdOfPetsFromDb(name, birthDate, typeId, ownerId);
+			
+			java.sql.Date sqlBirthDate = new java.sql.Date(birthDate.getTime());
+			
+			writeToMySqlDataBase(name, sqlBirthDate, typeId, ownerId);
+			String petId = retrieveIdOfPetsFromDb(name, sqlBirthDate, typeId, ownerId);
 
 			// Append the new owner to the csv
 			fw.append(petId);
 			fw.append(',');
 			fw.append(name);
 			fw.append(',');
-			fw.append(birthDate.toString());
+			fw.append(sqlBirthDate.toString());
 			fw.append(',');
 			fw.append(Integer.toString(typeId));
 			fw.append(',');
@@ -236,12 +238,12 @@ class PetController {
 		}
 	}
 
-	private String retrieveIdOfPetsFromDb(String name, Date birthDate, int typeId, int ownerId) throws Exception {
+	private String retrieveIdOfPetsFromDb(String name, java.sql.Date birthDate, int typeId, int ownerId) throws Exception {
 
 		Class.forName("com.mysql.jdbc.Driver").newInstance();
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
 		// Retrieve the id created
-		String selectQuery = "SELECT id FROM pets WHERE first_name=?"
+		String selectQuery = "SELECT id FROM pets WHERE name=?"
 				+ " AND birth_date=? AND type_id=? AND owner_id=?";
 
 		PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);

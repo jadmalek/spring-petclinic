@@ -105,7 +105,7 @@ class VisitController {
         try {
             FileWriter fw = new FileWriter(filename);
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "penis");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
             String query = "select * from visits";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
@@ -134,7 +134,7 @@ class VisitController {
         try {
             CSVReader reader = new CSVReader(new FileReader("new-datastore/visits.csv"));
 
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "penis");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
             String query = "select * from visits";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
