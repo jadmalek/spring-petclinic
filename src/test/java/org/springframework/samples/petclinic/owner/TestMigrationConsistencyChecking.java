@@ -63,12 +63,14 @@ public class TestMigrationConsistencyChecking {
         petController.writeToFile("Buddy", new Date(), 0, 0);
         petType.writeToFile("Doggo");
         visitController.writeToFile(1, new Date(), "An annual checkup");
+        vetController.writeToFile("Sophia", "Squash");
         assertEquals(0, ownerController.checkConsistency());
         assertEquals(0, petController.checkConsistency());
         assertEquals(0, petType.checkConsistency());
         assertEquals(0, visitController.checkConsistency());
+        assertEquals(0, vetController.checkConsistency());
         specialty.writeToFile("Specialty1");
-        assertEquals(0, specialty.checkConsistency());
+        assertEquals(0, specialty.checkSpecialtiesConsistency());
 
 
 		//shadow Reads for validation (read will access both old and new)

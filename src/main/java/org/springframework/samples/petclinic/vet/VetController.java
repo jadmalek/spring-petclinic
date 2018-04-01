@@ -25,8 +25,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -127,4 +129,65 @@ class VetController {
         return inconsistencies;
     }
 
+    public void writeToMySqlDataBase(String firstName, String lastName) throws Exception {
+
+    	Class.forName("com.mysql.jdbc.Driver").newInstance();
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+
+        // the mysql insert statement
+        String query = " INSERT into vets (firstName, lastName)"
+          + " Values (?, ?)";
+
+        // Create the MySql insert query
+        PreparedStatement preparedStmt = conn.prepareStatement(query);
+        preparedStmt.setString(1, firstName);
+        preparedStmt.setString(2, lastName);
+
+        // execute the prepared statement
+        preparedStmt.execute();
+    }
+    
+    public void writeToFile(String firstName, String lastName) {
+		String filename = "new-datastore/vets.csv";
+		try {
+			FileWriter fw = new FileWriter(filename, true);
+
+			writeToMySqlDataBase(firstName, lastName);
+			String vetId = retrieveIdOfPetsFromDb(firstName, lastName);
+
+			// Append the new owner to the csv
+			fw.append(vetId);
+			fw.append(',');
+			fw.append(firstName);
+			fw.append(',');
+			fw.append(lastName);
+			fw.append('\n');
+			fw.flush();
+			fw.close();
+
+			System.out.println("Shadow write complete for vets.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+    
+    private String retrieveIdOfPetsFromDb(String firstName, String lastName) throws Exception {
+
+		Class.forName("com.mysql.jdbc.Driver").newInstance();
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+		// Retrieve the id created
+		String selectQuery = "SELECT id FROM vets WHERE first_name=?"
+				+ " AND last_name=?";
+
+		PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
+		preparedSelect.setString(1, firstName);
+		preparedSelect.setString(2, lastName);
+
+		ResultSet rs = preparedSelect.executeQuery();
+		if (rs.next()) {
+			return Integer.toString(rs.getInt("id"));
+		}
+		return null;
+	}
 }
+
