@@ -28,7 +28,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -153,7 +152,7 @@ class VetController {
 			FileWriter fw = new FileWriter(filename, true);
 
 			writeToMySqlDataBase(firstName, lastName);
-			String vetId = retrieveIdOfPetsFromDb(firstName, lastName);
+			String vetId = retrieveIdOfVetsFromDb(firstName, lastName);
 
 			// Append the new owner to the csv
 			fw.append(vetId);
@@ -171,7 +170,7 @@ class VetController {
 		}
 	}
     
-    private String retrieveIdOfPetsFromDb(String firstName, String lastName) throws Exception {
+    private String retrieveIdOfVetsFromDb(String firstName, String lastName) throws Exception {
 
 		Class.forName("com.mysql.jdbc.Driver").newInstance();
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");

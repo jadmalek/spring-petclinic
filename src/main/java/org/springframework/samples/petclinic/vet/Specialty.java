@@ -159,7 +159,7 @@ public class Specialty extends NamedEntity implements Serializable {
         return inconsistencies;
     }
 
-    public void writeToMySqlDataBase(String name) throws Exception {
+    public void writeToMySqlDataBaseSpecialties(String name) throws Exception {
 
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
@@ -175,13 +175,30 @@ public class Specialty extends NamedEntity implements Serializable {
         // execute the prepared statement
         preparedStmt.execute();
     }
+    
+    public void writeToMySqlDataBaseVetSpecialties(int vetId, int specialtyID) throws Exception {
 
-	public void writeToFile(String name) {
+    	Class.forName("com.mysql.jdbc.Driver").newInstance();
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+
+        // the mysql insert statement
+        String query = " INSERT into vet-specialties (vetId, specialtyID)"
+          + " Values (?, ?)";
+
+        // Create the MySql insert query
+        PreparedStatement preparedStmt = conn.prepareStatement(query);
+        preparedStmt.setInt(vetId, specialtyID);
+
+        // execute the prepared statement
+        preparedStmt.execute();
+    }
+
+	public void writeToFileSpecialties(String name) {
 		String filename = "new-datastore/specialties.csv";
 		try {
 			FileWriter fw = new FileWriter(filename, true);
 
-			writeToMySqlDataBase(name);
+			writeToMySqlDataBaseSpecialties(name);
 			String specialtyId = retrieveIdOfSpecialtyFromDb(name);
 
 			// Append the new owner to the csv
@@ -193,7 +210,30 @@ public class Specialty extends NamedEntity implements Serializable {
 			fw.flush();
 			fw.close();
 
-			System.out.println("Shadow write complete.");
+			System.out.println("Shadow write complete for vet specialties.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void writeToFileVetSpecialties(int vetId, int specialityId) {
+		String filename = "new-datastore/vet-specialties.csv";
+		try {
+			FileWriter fw = new FileWriter(filename, true);
+
+			writeToMySqlDataBaseVetSpecialties(vetId, specialityId);
+			String vet = retrieveIdOfVetSpecialtyFromDb(vetId);
+
+			// Append the new vet-specialty to the csv
+			fw.append((char)vetId);
+			fw.append(',');
+			fw.append((char)specialityId);
+
+			fw.append('\n');
+			fw.flush();
+			fw.close();
+
+			System.out.println("Shadow write complete for vet specialties.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -208,6 +248,23 @@ public class Specialty extends NamedEntity implements Serializable {
 
 		PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
 		preparedSelect.setString(1, name);
+
+		ResultSet rs = preparedSelect.executeQuery();
+		if (rs.next()) {
+			return Integer.toString(rs.getInt("id"));
+		}
+		return null;
+	}
+	
+	private String retrieveIdOfVetSpecialtyFromDb(int vetId) throws Exception {
+
+		Class.forName("com.mysql.jdbc.Driver").newInstance();
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+		// Retrieve the id created
+		String selectQuery = "SELECT id FROM vet_specialties WHERE vetId=?";
+
+		PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
+		preparedSelect.setInt(1, vetId);
 
 		ResultSet rs = preparedSelect.executeQuery();
 		if (rs.next()) {
