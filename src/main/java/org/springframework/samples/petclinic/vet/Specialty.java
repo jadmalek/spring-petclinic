@@ -186,7 +186,7 @@ public class Specialty extends NamedEntity implements Serializable {
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
 
         // the mysql insert statement
-        String query = " INSERT into vet-specialties (vetId, specialtyID)"
+        String query = " INSERT into vet_specialties (vet_id, specialty_id)"
           + " Values (?, ?)";
 
         // Create the MySql insert query
