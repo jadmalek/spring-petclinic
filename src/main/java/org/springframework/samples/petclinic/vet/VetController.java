@@ -28,6 +28,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -130,19 +131,20 @@ class VetController {
         return inconsistencies;
     }
 
-    public void writeToMySqlDataBase(String firstName, String lastName) throws Exception {
+    public void writeToMySqlDataBase(int vetId, String firstName, String lastName) throws Exception {
 
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
 
         // the mysql insert statement
-        String query = " INSERT into vets (first_name, last_name)"
-          + " Values (?, ?)";
+        String query = " INSERT into vets (id, first_name, last_name)"
+          + " Values (?, ?, ?)";
 
         // Create the MySql insert query
         PreparedStatement preparedStmt = conn.prepareStatement(query);
-        preparedStmt.setString(1, firstName);
-        preparedStmt.setString(2, lastName);
+        preparedStmt.setInt(1, vetId);
+        preparedStmt.setString(2, firstName);
+        preparedStmt.setString(3, lastName);
 
         // execute the prepared statement
         preparedStmt.execute();
@@ -151,13 +153,13 @@ class VetController {
     public void writeToFile(String firstName, String lastName) {
 		String filename = "new-datastore/vets.csv";
 		try {
+			int vetId = getCSVRow();
 			FileWriter fw = new FileWriter(filename, true);
 
-			writeToMySqlDataBase(firstName, lastName);
-			String vetId = retrieveIdOfVetsFromDb(firstName, lastName);
+			writeToMySqlDataBase(vetId, firstName, lastName);
 
 			// Append the new owner to the csv
-			fw.append(vetId);
+			fw.append(Integer.toString(vetId));
 			fw.append(',');
 			fw.append(firstName);
 			fw.append(',');
@@ -170,25 +172,6 @@ class VetController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-    private String retrieveIdOfVetsFromDb(String firstName, String lastName) throws Exception {
-
-		Class.forName("com.mysql.jdbc.Driver").newInstance();
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
-		// Retrieve the id created
-		String selectQuery = "SELECT id FROM vets WHERE first_name=?"
-				+ " AND last_name=?";
-
-		PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
-		preparedSelect.setString(1, firstName);
-		preparedSelect.setString(2, lastName);
-
-		ResultSet rs = preparedSelect.executeQuery();
-		if (rs.next()) {
-			return Integer.toString(rs.getInt("id"));
-		}
-		return null;
 	}
 
   public String readFromMySqlDataBase(int vetId) {
@@ -205,7 +188,7 @@ class VetController {
 
           while (rs.next()) {
             stringBuilder.append(Integer.toString(rs.getInt("id")) + ",");
-  				stringBuilder.append(rs.getString("first_name") + ",");
+  			stringBuilder.append(rs.getString("first_name") + ",");
             stringBuilder.append(rs.getString("last_name") + ",");
           }
       } catch (Exception e) {
@@ -235,5 +218,13 @@ class VetController {
         }
 
       return vetData;
+    }
+    
+    private int getCSVRow() throws Exception {
+    	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/vets.csv"));
+    	List<String[]> content = csvReader.readAll();
+    	//Returning size + 1 to avoid id of 0
+    	csvReader.close();
+    	return content.size() + 1;
     }
 }
