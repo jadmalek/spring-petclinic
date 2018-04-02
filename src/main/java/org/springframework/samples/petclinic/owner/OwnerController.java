@@ -286,5 +286,57 @@ class OwnerController {
             e.printStackTrace();
         }
     }
+    
+    
+    public String readFromMySqlDataBase(int ownerId) {
+    	
+    	StringBuilder stringBuilder = new StringBuilder();
+    	try {
+	        Class.forName("com.mysql.jdbc.Driver").newInstance();
+	        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+	        String query = "SELECT * FROM owners WHERE id=?";
+	        PreparedStatement preparedSelect = conn.prepareStatement(query);
+	        preparedSelect.setInt(1, ownerId);
+	        
+	        ResultSet rs = preparedSelect.executeQuery();
+	        
+	        while (rs.next()) {
+	        	stringBuilder.append(Integer.toString(rs.getInt("id")) + ",");
+	        	stringBuilder.append(rs.getString("first_name") + ",");
+	        	stringBuilder.append(rs.getString("last_name") + ",");
+	        	stringBuilder.append(rs.getString("address") + ",");
+	        	stringBuilder.append(rs.getString("city") + ",");
+	        	stringBuilder.append(rs.getString("telephone") + ",");
+	        }   	    
+    	} catch (Exception e) {
+            e.printStackTrace();
+        }
+    	
+        String ownerData = stringBuilder.toString();
+    	return ownerData;
+    }
+    
+    public String readFromNewDataStore(int ownerId) {    	
+    	String ownerData = "";
+    	
+    	try {
+    		CSVReader reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
+    		
+    		for (String[] actual : reader) {
+    			if (actual[0].equals(String.valueOf(ownerId))) {
+    				for (int i = 0; i < 6; i++) {
+    					System.out.println("umm in csv: " + actual[i]);
+    					ownerData += actual[i] + ",";
+    				}
+    			}   		
+    		}
+    		reader.close();
+    		
+    	} catch (Exception e) {
+            e.printStackTrace();
+        }
+    	return ownerData;
+    }
+
 }
 

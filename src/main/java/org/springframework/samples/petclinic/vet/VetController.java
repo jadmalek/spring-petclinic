@@ -109,7 +109,7 @@ class VetController {
                 for(int i=0;i<3;i++) {
                     int columnIndex = i+1;
                     if(!actual[i].equals(rs.getString(columnIndex))) {
-                    	System.out.println("Consistency Violation!\n" + 
+                    	System.out.println("Consistency Violation!\n" +
                 				"\n\t expected = " + rs.getString(columnIndex)
                 				+ "\n\t actual = " + actual[i]);
                     	//fix inconsistency
@@ -118,12 +118,12 @@ class VetController {
                     }
                 }
             }
-            
-            if (inconsistencies == 0) 
+
+            if (inconsistencies == 0)
             	System.out.println("No inconsistencies across former vets table dataset.");
             else
             	System.out.println("Number of Inconsistencies: " + inconsistencies);
-            
+
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
@@ -147,7 +147,7 @@ class VetController {
         // execute the prepared statement
         preparedStmt.execute();
     }
-    
+
     public void writeToFile(String firstName, String lastName) {
 		String filename = "new-datastore/vets.csv";
 		try {
@@ -171,7 +171,7 @@ class VetController {
 			e.printStackTrace();
 		}
 	}
-    
+
     private String retrieveIdOfVetsFromDb(String firstName, String lastName) throws Exception {
 
 		Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -190,5 +190,50 @@ class VetController {
 		}
 		return null;
 	}
-}
 
+  public String readFromMySqlDataBase(int vetId) {
+
+      StringBuilder stringBuilder = new StringBuilder();
+      try {
+          Class.forName("com.mysql.jdbc.Driver").newInstance();
+          Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+          String query = "SELECT * FROM vets WHERE id=?";
+          PreparedStatement preparedSelect = conn.prepareStatement(query);
+          preparedSelect.setInt(1, vetId);
+
+          Statement stmt = conn.createStatement();
+          ResultSet rs = stmt.executeQuery(query);
+
+          while (rs.next()) {
+            stringBuilder.append(rs.getString(1) + ",");
+            stringBuilder.append(rs.getString(2) + ",");
+          }
+      } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String vetData = stringBuilder.toString();
+      return vetData;
+    }
+
+    public String readFromNewDataStore(int vetId) {
+      String vetData = "";
+
+      try {
+        CSVReader reader = new CSVReader(new FileReader("new-datastore/vets.csv"));
+
+        for (String[] actual : reader) {
+          if (actual[0] == String.valueOf(vetId)) {
+            for (int i = 0; i < 2; i++) {
+              vetData += actual[i] + ",";
+            }
+          }
+        }
+
+      } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+      return vetData;
+    }
+}
