@@ -262,7 +262,7 @@ class PetController {
 	        ResultSet rs = preparedSelect.executeQuery();
 
 	        while (rs.next()) {
-	        	stringBuilder.append(rs.getInt("id") + ",");
+	        	stringBuilder.append(Integer.toString(rs.getInt("id")) + ",");
 	        	stringBuilder.append(rs.getString("name") + ",");
 	        	stringBuilder.append(rs.getDate("birth_date") + ",");
 	        	stringBuilder.append(rs.getInt("type_id") + ",");

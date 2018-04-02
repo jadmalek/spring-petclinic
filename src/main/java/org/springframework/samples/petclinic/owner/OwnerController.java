@@ -325,7 +325,6 @@ class OwnerController {
     		for (String[] actual : reader) {
     			if (actual[0].equals(String.valueOf(ownerId))) {
     				for (int i = 0; i < 6; i++) {
-    					System.out.println("umm in csv: " + actual[i]);
     					ownerData += actual[i] + ",";
     				}
     			}   		

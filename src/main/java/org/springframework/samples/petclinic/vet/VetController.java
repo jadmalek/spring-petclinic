@@ -204,8 +204,8 @@ class VetController {
           ResultSet rs = preparedSelect.executeQuery();
 
           while (rs.next()) {
-            stringBuilder.append(rs.getInt("id") + ",");
-            stringBuilder.append(rs.getString("first_name") + ",");
+            stringBuilder.append(Integer.toString(rs.getInt("id")) + ",");
+  				stringBuilder.append(rs.getString("first_name") + ",");
             stringBuilder.append(rs.getString("last_name") + ",");
           }
       } catch (Exception e) {
