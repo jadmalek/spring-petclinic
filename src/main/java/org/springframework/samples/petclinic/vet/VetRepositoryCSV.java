@@ -21,18 +21,10 @@ public class VetRepositoryCSV implements VetRepository{
 			vetReader = new CSVReader(new FileReader(vetFile));
 			List<String[]> vetData = vetReader.readAll();
 			for(String[] row: vetData) {
-				int vetId = Integer.parseInt(row[0]);
-				List<Specialty> vetSpecs = getVetSpecs(vetId);
-				Vet newVet = new Vet();
-				newVet.setId(vetId);
-				newVet.setFirstName(row[1]);
-				newVet.setLastName(row[2]);
-				
-				for(Specialty spec: vetSpecs) {
-					newVet.addSpecialty(spec);
+				if(row.length > 0) {
+					result.add(constructVet(row));
 				}
 				
-				result.add(newVet);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -55,12 +47,8 @@ public class VetRepositoryCSV implements VetRepository{
 			specReader = new CSVReader(new FileReader(vetSpecFile));
 			List<String[]> specData = specReader.readAll();
 			for(String[] row : specData) {
-				if(row.length == 2 && Integer.parseInt(row[1]) == vetId) {
-					int specialtyId = Integer.parseInt(row[1]);
-					Specialty newSpec = new Specialty();
-					newSpec.setId(specialtyId);
-					newSpec.setName(getSpecialtyName(specialtyId));
-					specs.add(newSpec);
+				if(row.length > 0 && Integer.parseInt(row[1]) == vetId) {
+					specs.add(constructSpecialty(row));
 				}
 			}
 		} catch (IOException e) {
@@ -89,6 +77,7 @@ public class VetRepositoryCSV implements VetRepository{
 					specReader.close();
 					return row[1];
 				}
+				row = specReader.readNext();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -103,6 +92,30 @@ public class VetRepositoryCSV implements VetRepository{
 		}
 		
 		return null;
+	}
+	
+	private Specialty constructSpecialty(String[] row) {
+		int specialtyId = Integer.parseInt(row[1]);
+		Specialty newSpec = new Specialty();
+		newSpec.setId(specialtyId);
+		newSpec.setName(getSpecialtyName(specialtyId));
+		
+		return newSpec;
+	}
+	
+	private Vet constructVet(String[] row) {
+		int vetId = Integer.parseInt(row[0]);
+		List<Specialty> vetSpecs = getVetSpecs(vetId);
+		Vet newVet = new Vet();
+		newVet.setId(vetId);
+		newVet.setFirstName(row[1]);
+		newVet.setLastName(row[2]);
+		
+		for(Specialty spec: vetSpecs) {
+			newVet.addSpecialty(spec);
+		}
+		
+		return newVet;
 	}
 
 }

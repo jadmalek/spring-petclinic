@@ -1,0 +1,127 @@
+package org.springframework.samples.petclinic.owner;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.opencsv.CSVReader;
+
+//Pet csv format: Id, Name, Birth date, typeId, OwnerId
+
+public class PetRepositoryCSV implements PetRepository{
+	String petFile = "new-datastore/pets.csv";
+	String petTypeFile = "new-datastore/pet-types.csv";
+	
+	@Override
+	public List<PetType> findPetTypes() {
+		List<PetType> types = new ArrayList<>();
+		CSVReader typeReader = null;
+	
+		try {
+			typeReader = new CSVReader(new FileReader(petTypeFile));
+			String[] row = typeReader.readNext();
+			while(row != null) {
+				PetType newType = constructType(row);
+				types.add(newType);
+				row = typeReader.readNext();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if(typeReader != null) {
+				try {
+					typeReader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return types;
+	}
+
+	@Override
+	public Pet findById(Integer id) {
+		CSVReader petReader = null;
+		
+		try {
+			petReader = new CSVReader(new FileReader(petFile));
+			String[] row = petReader.readNext();
+			while(row != null) {
+				if(row.length > 0 && Integer.parseInt(row[0]) == id) {
+					petReader.close();
+					return constructPet(row);
+				}
+				row = petReader.readNext();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if(petReader != null) {
+				try {
+					petReader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return null;
+	}
+
+	@Override
+	public void save(Pet pet) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private PetType findPetTypeById(Integer id) {
+		CSVReader petTypeReader = null;
+		
+		try {
+			petTypeReader = new CSVReader(new FileReader(petTypeFile));
+			String[] row = petTypeReader.readNext();
+			while(row != null) {
+				if(row.length > 0 && Integer.parseInt(row[0]) == id) {
+					petTypeReader.close();
+					return constructType(row);
+				}
+				row = petTypeReader.readNext();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if(petTypeReader != null) {
+				try {
+					petTypeReader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	private PetType constructType(String[] row) {
+		PetType type = new PetType();
+		type.setId(Integer.parseInt(row[0]));
+		type.setName(row[1]);
+		
+		return type;
+	}
+	
+	private Pet constructPet(String[] row) {
+		Pet pet = new Pet();
+		pet.setId(Integer.parseInt(row[0]));
+		pet.setName(row[1]);
+		pet.setBirthDate(new Date(Long.parseLong(row[2])));
+		pet.setType(findPetTypeById(Integer.parseInt(row[3])));
+		// Also do something about the owner?????? Problem is a circular dependency
+		
+		return pet;
+	}
+}
