@@ -80,6 +80,8 @@ public class TestMigrationConsistencyChecking {
         assertEquals(ownerController.readFromMySqlDataBase(1), ownerController.readFromNewDataStore(1));
         assertEquals(petController.readFromMySqlDataBase(1), petController.readFromNewDataStore(1));
         assertEquals(vetController.readFromMySqlDataBase(1), vetController.readFromNewDataStore(1));
+        assertEquals(specialty.readFromMySqlDataBaseSpecialties(1), specialty.readFromNewDataStore(1));
+
 		// old will provide response
 		// consistency check that old == new
 

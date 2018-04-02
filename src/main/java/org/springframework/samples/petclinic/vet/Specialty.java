@@ -179,7 +179,7 @@ public class Specialty extends NamedEntity implements Serializable {
         // execute the prepared statement
         preparedStmt.execute();
     }
-    
+
     public void writeToMySqlDataBaseVetSpecialties(int vetId, int specialtyID) throws Exception {
 
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -219,7 +219,7 @@ public class Specialty extends NamedEntity implements Serializable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void writeToFileVetSpecialties(int vetId, int specialityId) {
 		String filename = "new-datastore/vet-specialties.csv";
 		try {
@@ -259,7 +259,7 @@ public class Specialty extends NamedEntity implements Serializable {
 		}
 		return null;
 	}
-	
+
 	private String retrieveIdOfVetSpecialtyFromDb(int vetId) throws Exception {
 
 		Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -275,6 +275,52 @@ public class Specialty extends NamedEntity implements Serializable {
 			return Integer.toString(rs.getInt("id"));
 		}
 		return null;
+	}
+
+	public String readFromMySqlDataBaseSpecialties(int specialtyId) {
+
+		StringBuilder stringBuilder = new StringBuilder();
+		try {
+				Class.forName("com.mysql.jdbc.Driver").newInstance();
+				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+				String query = "SELECT * FROM specialties WHERE id=?";
+				PreparedStatement preparedSelect = conn.prepareStatement(query);
+				preparedSelect.setInt(1, specialtyId);
+
+				Statement stmt = conn.createStatement();
+				ResultSet rs = stmt.executeQuery(query);
+
+				while (rs.next()) {
+					stringBuilder.append(rs.getString(1) + ",");
+					stringBuilder.append(rs.getString(2) + ",");
+				}
+		} catch (Exception e) {
+					e.printStackTrace();
+			}
+
+			String specialtyData = stringBuilder.toString();
+		return specialtyData;
+	}
+
+	public String readFromNewDataStore(int specialtyId) {
+		String specialtyData = "";
+
+		try {
+			CSVReader reader = new CSVReader(new FileReader("new-datastore/specialties.csv"));
+
+			for (String[] actual : reader) {
+				if (actual[0] == String.valueOf(specialtyId)) {
+					for (int i = 0; i < 2; i++) {
+						specialtyData += actual[i] + ",";
+					}
+				}
+			}
+
+		} catch (Exception e) {
+					e.printStackTrace();
+			}
+
+		return specialtyData;
 	}
 
 }
