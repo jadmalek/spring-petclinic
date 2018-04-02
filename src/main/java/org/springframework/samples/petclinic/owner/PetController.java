@@ -213,12 +213,20 @@ class PetController {
 		String filename = "new-datastore/pets.csv";
 		try {
 			int petId = getCSVRow();
+			Pet pet = new Pet();
+			pet.setId(petId);
+			pet.setName(name);
+			pet.setBirthDate(birthDate);
+			pet.setOwner(this.owners.findById(ownerId));
+			pet.setType(this.pets.findPetTypes().get(typeId));
+			this.pets.save(pet);
+			
 
 			FileWriter fw = new FileWriter(filename, true);
 
 			java.sql.Date sqlBirthDate = new java.sql.Date(birthDate.getTime());
 
-			writeToMySqlDataBase(petId, name, sqlBirthDate, typeId, ownerId);
+			//writeToMySqlDataBase(petId, name, sqlBirthDate, typeId, ownerId);
 
 			// Append the new owner to the csv
 			fw.append(Integer.toString(petId));

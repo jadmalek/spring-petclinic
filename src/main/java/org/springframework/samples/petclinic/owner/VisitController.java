@@ -187,12 +187,19 @@ class VisitController {
     	String filename ="new-datastore/visits.csv";
         try {
         	int visitId = getCSVRow();
+        	Visit visit = new Visit();
+        	visit.setId(visitId);
+        	visit.setDate(visitDate);
+        	visit.setPetId(petId);
+        	visit.setDescription(description);
+        	this.visits.save(visit);
+        	
             FileWriter fw = new FileWriter(filename, true);
 
             //Convert the java.util.Date to java.sql.Date
             java.sql.Date sqlDate = new java.sql.Date(visitDate.getTime());
 
-            writeToMySqlDataBase(visitId, petId, sqlDate, description);
+            //writeToMySqlDataBase(visitId, petId, sqlDate, description);
 
             //Append the new visit to the csv
             fw.append(Integer.toString(visitId));

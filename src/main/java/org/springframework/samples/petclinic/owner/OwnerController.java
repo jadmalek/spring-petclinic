@@ -215,29 +215,7 @@ class OwnerController {
         return inconsistencies;
     }
 
-    public void writeToMySqlDataBase(int id, String firstName, String lastName, String address, 
-    		String city, String telephone) throws Exception {
-
-    	Class.forName("com.mysql.jdbc.Driver").newInstance();
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
-
-        // the mysql insert statement
-        String query = " INSERT into owners (id, first_name, last_name, address, city, telephone)"
-          + " Values (?, ?, ?, ?, ?, ?)";
-
-        // Create the MySql insert query
-        PreparedStatement preparedStmt = conn.prepareStatement(query);
-        preparedStmt.setInt(1, id);
-        preparedStmt.setString(2, firstName);
-        preparedStmt.setString(3, lastName);
-        preparedStmt.setString(4, address);
-        preparedStmt.setString(5, city);
-        preparedStmt.setString(6, telephone);
-
-        // execute the preparedstatement
-        preparedStmt.execute();
-    }
-    
+  
     private int getCSVRow() throws Exception {
     	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/owners.csv"));
     	List<String[]> content = csvReader.readAll();
@@ -249,20 +227,20 @@ class OwnerController {
     public void writeToFile(String firstName, String lastName, String address, String city, String telephone) {
     	String filename ="new-datastore/owners.csv";
         try {
-            /*Owner owner = new Owner();
-            owner.setId(this.getOwnerId());
+
+            int ownerId = this.getCSVRow();
+            
+            Owner owner = new Owner();
+            owner.setId(ownerId);
             owner.setFirstName(firstName);
             owner.setLastName(lastName);
             owner.setAddress(address);
             owner.setCity(city);
             owner.setTelephone(telephone);
-            this.owners.save(owner);*/
-            
-            int ownerId = this.getCSVRow();
-            
+            this.owners.save(owner);
             
             FileWriter fw = new FileWriter(filename, true);
-            writeToMySqlDataBase(ownerId, firstName, lastName, address, city, telephone);
+           // writeToMySqlDataBase(ownerId, firstName, lastName, address, city, telephone);
 
             //Append the new owner to the csv
             fw.append(Integer.toString(ownerId));
