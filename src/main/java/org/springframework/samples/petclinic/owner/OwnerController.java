@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -223,8 +224,10 @@ class OwnerController {
             e.printStackTrace();
         }
     }
-
-    public int checkConsistency() {
+    
+    @Async
+    @Scheduled(fixedDelay = 5000)
+    public Future<Integer> checkConsistency() {
         int inconsistencies = 0;
 
         try {
@@ -240,7 +243,7 @@ class OwnerController {
                 for(int i=0;i<6;i++) {
                     int columnIndex = i+1;
                     if(!actual[i].equals(rs.getString(columnIndex))) {
-                    	System.out.println("Consistency Violation!\n" +
+                    	System.out.println("Owners Table Consistency Violation!\n" +
                 				"\n\t expected = " + rs.getString(columnIndex)
                 				+ "\n\t actual = " + actual[i]);
                         //fix inconsistency
@@ -253,12 +256,12 @@ class OwnerController {
             if (inconsistencies == 0)
             	System.out.println("No inconsistencies across former owners table dataset.");
             else
-            	System.out.println("Number of Inconsistencies: " + inconsistencies);
+            	System.out.println("Number of Inconsistencies for Owners Table: " + inconsistencies);
 
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
-        return inconsistencies;
+        return new AsyncResult<Integer>(inconsistencies);
     }
 
 

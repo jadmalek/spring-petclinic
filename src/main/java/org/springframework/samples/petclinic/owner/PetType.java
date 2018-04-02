@@ -23,12 +23,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import com.opencsv.CSVReader;
 import org.springframework.samples.petclinic.model.NamedEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.Scheduled;
 
 /**
  * @author Juergen Hoeller
@@ -62,7 +66,9 @@ public class PetType extends NamedEntity {
         }
     }
 
-    public int checkConsistency() {
+    @Async
+    @Scheduled(fixedDelay = 5000)
+    public Future<Integer> checkConsistency() {
         int inconsistencies = 0;
 
         try {
@@ -78,7 +84,7 @@ public class PetType extends NamedEntity {
                 for(int i=0;i<2;i++) {
                     int columnIndex = i+1;
                     if(!actual[i].equals(rs.getString(columnIndex))) {
-                    	System.out.println("Consistency Violation!\n" + 
+                    	System.out.println("Pet Types Consistency Violation!\n" + 
                 				"\n\t expected = " + rs.getString(columnIndex)
                 				+ "\n\t actual = " + actual[i]);
                     	//fix inconsistency
@@ -91,12 +97,12 @@ public class PetType extends NamedEntity {
             if (inconsistencies == 0) 
             	System.out.println("No inconsistencies across former types table dataset.");
             else
-            	System.out.println("Number of Inconsistencies: " + inconsistencies);
+            	System.out.println("Pet Types Number of Inconsistencies: " + inconsistencies);
             
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
-        return inconsistencies;
+        return new AsyncResult<Integer>(inconsistencies);
     }
     
     public void writeToMySqlDataBase(int typeId, String name) throws Exception {
