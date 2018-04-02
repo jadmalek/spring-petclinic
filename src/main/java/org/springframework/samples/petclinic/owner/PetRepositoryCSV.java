@@ -2,7 +2,12 @@ package org.springframework.samples.petclinic.owner;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,12 +19,12 @@ import com.opencsv.CSVReader;
 public class PetRepositoryCSV implements PetRepository{
 	String petFile = "new-datastore/pets.csv";
 	String petTypeFile = "new-datastore/pet-types.csv";
-	
+
 	@Override
 	public List<PetType> findPetTypes() {
 		List<PetType> types = new ArrayList<>();
 		CSVReader typeReader = null;
-	
+
 		try {
 			typeReader = new CSVReader(new FileReader(petTypeFile));
 			String[] row = typeReader.readNext();
@@ -39,14 +44,14 @@ public class PetRepositoryCSV implements PetRepository{
 				}
 			}
 		}
-		
+
 		return types;
 	}
 
 	@Override
 	public Pet findById(Integer id) {
 		CSVReader petReader = null;
-		
+
 		try {
 			petReader = new CSVReader(new FileReader(petFile));
 			String[] row = petReader.readNext();
@@ -68,19 +73,59 @@ public class PetRepositoryCSV implements PetRepository{
 				}
 			}
 		}
-		
+
 		return null;
+	}
+
+	public Pet save(String name, Date birthDate, int typeId, int ownerId) {
+		int petId = 0;
+		try {
+			petId = getCSVRow();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		Pet pet = new Pet();
+		pet.setId(petId);
+		pet.setBirthDate(birthDate);
+		pet.setName(name);
+		pet.setType(typeId);
+		pet.setOwner(ownerId);
+		save(pet);
+		return pet;
 	}
 
 	@Override
 	public void save(Pet pet) {
-		// TODO Auto-generated method stub
-		
+			String filename ="new-datastore/pets.csv";
+				try {
+						FileWriter fw = new FileWriter(filename, true);
+
+						//Append the new owner to the csv
+						fw.append(Integer.toString(petId));
+						fw.append(',');
+						fw.append(name);
+						fw.append(',');
+						fw.append(sqlBirthDate.toString());
+						fw.append(',');
+						fw.append(Integer.toString(typeId));
+						fw.append(',');
+						fw.append(Integer.toString(ownerId));
+						fw.append(',');
+						fw.append('\n');
+						fw.flush();
+						fw.close();
+
+						System.out.println("Shadow write for pet complete.");
+				} catch (Exception e) {
+						e.printStackTrace();
+				}
+
 	}
-	
+
 	private PetType findPetTypeById(Integer id) {
 		CSVReader petTypeReader = null;
-		
+
 		try {
 			petTypeReader = new CSVReader(new FileReader(petTypeFile));
 			String[] row = petTypeReader.readNext();
@@ -102,18 +147,18 @@ public class PetRepositoryCSV implements PetRepository{
 				}
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	private PetType constructType(String[] row) {
 		PetType type = new PetType();
 		type.setId(Integer.parseInt(row[0]));
 		type.setName(row[1]);
-		
+
 		return type;
 	}
-	
+
 	private Pet constructPet(String[] row) {
 		Pet pet = new Pet();
 		pet.setId(Integer.parseInt(row[0]));
@@ -121,7 +166,7 @@ public class PetRepositoryCSV implements PetRepository{
 		pet.setBirthDate(new Date(Long.parseLong(row[2])));
 		pet.setType(findPetTypeById(Integer.parseInt(row[3])));
 		// Also do something about the owner?????? Problem is a circular dependency
-		
+
 		return pet;
 	}
 }

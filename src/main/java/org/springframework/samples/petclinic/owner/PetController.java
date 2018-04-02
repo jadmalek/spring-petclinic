@@ -17,6 +17,9 @@ package org.springframework.samples.petclinic.owner;
 
 import com.opencsv.CSVReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
@@ -26,6 +29,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import java.util.concurrent.Future;
+import java.util.Iterator;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.sql.Connection;
@@ -45,11 +50,13 @@ import java.util.List;
  */
 @Controller
 @RequestMapping("/owners/{ownerId}")
+@EnableAsync
 class PetController {
 
 	private static final String VIEWS_PETS_CREATE_OR_UPDATE_FORM = "pets/createOrUpdatePetForm";
 	private final PetRepository pets;
 	private final OwnerRepository owners;
+	private final PetRepositoryCSV csvPets;
 
 	@Autowired
 	public PetController(PetRepository pets, OwnerRepository owners) {
@@ -96,6 +103,8 @@ class PetController {
 			return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 		} else {
 			this.pets.save(pet);
+			this.csvPets.save(pet);
+			checkConsistency();
 			return "redirect:/owners/{ownerId}";
 		}
 	}
@@ -116,8 +125,30 @@ class PetController {
 		} else {
 			owner.addPet(pet);
 			this.pets.save(pet);
+			this.csvPets.save(pet);
+			checkConsistency();
 			return "redirect:/owners/{ownerId}";
 		}
+	}
+
+	@Async
+	public void shadowReadConsistencyCheck(Collection<Pet> expected, Collection<Pet> actual) {
+		Iterator<Pet> expectedPet = expected.iterator();
+		for (Pet actualPet : actual){
+			shadowReadConsistencyCheck(expectedPet.next(), actualPet);
+		}
+	}
+
+	@Async
+	public Future<Boolean> shadowReadConsistencyCheck(Pet expected, Pet actual) {
+		boolean consistent = actual.isEqualTo(expected);
+		if (!consistent) {
+			System.out.println("Inconsistency found between Pets" + "\n" +
+									expected.toString() + " and " + actual.toString());
+			//TODO: update the row in the shadowread
+			csvPets.updatePets(expected, actual);
+		}
+		return new AsyncResult<Boolean>(consistent);
 	}
 
 	//Implementation of method to move data from pets table to csv file
@@ -220,7 +251,7 @@ class PetController {
 			pet.setOwner(this.owners.findById(ownerId));
 			pet.setType(this.pets.findPetTypes().get(typeId));
 			this.pets.save(pet);
-			
+
 
 			FileWriter fw = new FileWriter(filename, true);
 
