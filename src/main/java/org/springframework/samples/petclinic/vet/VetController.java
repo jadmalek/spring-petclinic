@@ -205,8 +205,9 @@ class VetController {
           ResultSet rs = stmt.executeQuery(query);
 
           while (rs.next()) {
-            stringBuilder.append(rs.getString(1) + ",");
-            stringBuilder.append(rs.getString(2) + ",");
+            stringBuilder.append(Integer.toString(rs.getInt("id") + ",");
+  					stringBuilder.append(rs.getString("first_name") + ",");
+            stringBuilder.append(rs.getString("last_name") + ",");
           }
       } catch (Exception e) {
             e.printStackTrace();
@@ -224,7 +225,7 @@ class VetController {
 
         for (String[] actual : reader) {
           if (actual[0].equals(String.valueOf(vetId))) {
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 3; i++) {
               vetData += actual[i] + ",";
             }
           }

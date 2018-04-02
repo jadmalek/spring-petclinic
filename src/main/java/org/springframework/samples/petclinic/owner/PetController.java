@@ -263,10 +263,11 @@ class PetController {
 	        ResultSet rs = stmt.executeQuery(query);
 
 	        while (rs.next()) {
-	        	stringBuilder.append(rs.getString(1) + ",");
-	        	stringBuilder.append(rs.getString(2) + ",");
-	        	stringBuilder.append(rs.getString(3) + ",");
-	        	stringBuilder.append(rs.getString(4) + ",");
+						stringBuilder.append(Integer.toString(rs.getInt("id") + ",");
+  					stringBuilder.append(rs.getString("name") + ",");
+            stringBuilder.append(rs.getString("birth_date") + ",");
+						stringBuilder.append(rs.getString("type_id") + ",");
+						stringBuilder.append(rs.getString("owner_id") + ",");
 	        }
     	} catch (Exception e) {
             e.printStackTrace();
@@ -284,7 +285,7 @@ class PetController {
 
     		for (String[] actual : reader) {
     			if (actual[0].equals(String.valueOf(petId))) {
-    				for (int i = 0; i < 4; i++) {
+    				for (int i = 0; i < 5; i++) {
     					petData += actual[i] + ",";
     				}
     			}
