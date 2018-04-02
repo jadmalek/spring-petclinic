@@ -5,12 +5,15 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import java.util.Collection;
 import java.util.Date;
 
+import org.springframework.samples.petclinic.vet.VetRepositoryCSV;
 import org.springframework.samples.petclinic.owner.OwnerController;
 import org.springframework.samples.petclinic.owner.OwnerRepository;
 import org.springframework.samples.petclinic.vet.VetRepository;
 import org.springframework.samples.petclinic.vet.Specialty;
+import org.springframework.samples.petclinic.vet.Vet;
 import org.springframework.samples.petclinic.vet.VetController;
 import org.springframework.samples.petclinic.visit.VisitRepository;
 
@@ -34,7 +37,7 @@ public class TestMigrationConsistencyChecking {
     	visitController = new VisitController(visits, pets);
     	vetController = new VetController(vets);
     	petType = new PetType();
-    	specialty = new Specialty();;
+    	specialty = new Specialty();
     }
 
     @Test
@@ -92,5 +95,21 @@ public class TestMigrationConsistencyChecking {
 
 		//long term consistency checker
 	}
+    
+    /*
+     * This test is disabled because I'm unable to test it on my setup
+     * however I leave it to show what a check might look like.
+    @Test
+    public void testVetRepoConsistency() {
+    	vetController.forklift();
+    	VetRepositoryCSV csvRepo = new VetRepositoryCSV();
+    	Collection<Vet> sqlVets = vets.findAll();
+    	Collection<Vet> csvVets = csvRepo.findAll();
+    	assertEquals(sqlVets.size(), csvVets.size());
+    	for(Vet item: sqlVets) {
+    		assertTrue(csvVets.contains(item));
+    	}
+    }
+    */
 
 }
