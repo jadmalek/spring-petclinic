@@ -1,9 +1,15 @@
 package org.springframework.samples.petclinic.owner;
 
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import com.opencsv.CSVReader;
 
@@ -69,12 +75,88 @@ public class OwnerRepositoryCSV implements OwnerRepository{
 		}
 		return null;
 	}
-
+	
+	
+	public Owner save(String firstName, String lastName, String address, String city, String telephone) {
+		int ownerId = 0;
+		try {
+			ownerId = getCSVRow();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	 
+		Owner owner = new Owner();
+		owner.setId(ownerId);
+		owner.setFirstName(firstName);
+		owner.setLastName(lastName);
+		owner.setAddress(address);
+		owner.setCity(city);
+		owner.setTelephone(telephone);
+		save(owner);
+		return owner;
+	}
+	
 	@Override
 	public void save(Owner owner) {
-		// TODO Auto-generated method stub
+    	String filename ="new-datastore/owners.csv";
+        try {
+            FileWriter fw = new FileWriter(filename, true);
+
+            //Append the new owner to the csv
+            fw.append(Integer.toString(owner.getId()));
+            fw.append(',');
+            fw.append(owner.getFirstName());
+            fw.append(',');
+            fw.append(owner.getLastName());
+            fw.append(',');
+            fw.append(owner.getAddress());
+            fw.append(',');
+            fw.append(owner.getAddress());
+            fw.append(',');
+            fw.append(owner.getTelephone());
+            fw.append(',');
+            fw.append('\n');
+            fw.flush();
+            fw.close();
+
+            System.out.println("Shadow write for owner complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 		
 	}
+	
+	public void updateOwner(Owner correctOwner, Owner ownerToBeUpdated) {
+		CSVReader reader = null;
+		try{
+			reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
+
+	        for(String[] actual : reader) {
+	        	//TODO: UPDATE THE OWNER ACCORDINGLY 
+	        	//Find the row corresponding to "ownerToBeUpdated" and replace with "correctOwner"
+	           /* for(int i=0;i<6;i++) {
+	                int columnIndex = i+1;
+	                if(actual[i].equals(ownerToBeUpdated.toString())) {
+	                	System.out.println("Consistency Violation!\n" +
+	            				"\n\t expected = " + rs.getString(columnIndex)
+	            				+ "\n\t actual = " + actual[i]);
+	                    //fix inconsistency
+	                	//actual[i] =;
+	                }
+	            }*/
+	        }
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				reader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
 	
 	private Owner constructOwner(String[] row) {
 		Owner newOwner = new Owner();
@@ -88,4 +170,12 @@ public class OwnerRepositoryCSV implements OwnerRepository{
 		return newOwner;
 	}
 	
+    private int getCSVRow() throws Exception {
+    	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/owners.csv"));
+    	List<String[]> content = csvReader.readAll();
+    	//Returning size + 1 to avoid id of 0
+    	csvReader.close();
+    	return content.size() + 1;
+    }
+
 }

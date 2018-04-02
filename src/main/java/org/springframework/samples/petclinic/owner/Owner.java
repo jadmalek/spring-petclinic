@@ -149,4 +149,12 @@ public class Owner extends Person {
                 .append("firstName", this.getFirstName()).append("address", this.address)
                 .append("city", this.city).append("telephone", this.telephone).toString();
     }
+
+    public boolean isEqualTo(Owner otherOwner){
+    	return(this.getFirstName().equals(otherOwner.getFirstName()) &&
+    			this.getLastName().equals(otherOwner.getLastName()) &&
+    			this.getCity().equals(otherOwner.getCity()) &&
+    			this.getId().equals(otherOwner.getId()) &&
+    			this.getTelephone().equals(otherOwner.getTelephone()));
+    }
 }

@@ -18,6 +18,9 @@ package org.springframework.samples.petclinic.owner;
 
 import com.opencsv.CSVReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,9 +35,10 @@ import javax.validation.Valid;
 
 import java.io.FileReader;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
+import java.util.concurrent.Future;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -50,14 +54,17 @@ import java.sql.SQLException;
  * @author Michael Isvy
  */
 @Controller
+@EnableAsync
 class OwnerController {
 
     private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm";
     private final OwnerRepository owners;
-
+    private final OwnerRepositoryCSV csvOwners;
+    
     @Autowired
-    public OwnerController(OwnerRepository clinicService) {
+    public OwnerController(OwnerRepository clinicService, OwnerRepositoryCSV csvOwners) {
         this.owners = clinicService;
+        this.csvOwners = csvOwners;
     }
 
     @InitBinder
@@ -79,6 +86,9 @@ class OwnerController {
             return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
         } else {
             this.owners.save(owner);
+            this.csvOwners.save(owner);
+
+            checkConsistency();
             return "redirect:/owners/" + owner.getId();
         }
     }
@@ -99,6 +109,8 @@ class OwnerController {
 
         // find owners by last name
         Collection<Owner> results = this.owners.findByLastName(owner.getLastName());
+        Collection<Owner> csvResults = this.csvOwners.findByLastName(owner.getLastName());
+        shadowReadConsistencyCheck(results, csvResults);
         if (results.isEmpty()) {
             // no owners found
             result.rejectValue("lastName", "notFound", "not found");
@@ -128,6 +140,8 @@ class OwnerController {
         } else {
             owner.setId(ownerId);
             this.owners.save(owner);
+            this.csvOwners.save(owner);
+            checkConsistency();
             return "redirect:/owners/{ownerId}";
         }
     }
@@ -141,9 +155,33 @@ class OwnerController {
     @GetMapping("/owners/{ownerId}")
     public ModelAndView showOwner(@PathVariable("ownerId") int ownerId) {
         ModelAndView mav = new ModelAndView("owners/ownerDetails");
-        mav.addObject(this.owners.findById(ownerId));
+        Owner expectedOwner = this.owners.findById(ownerId);
+        mav.addObject(expectedOwner);
+        Owner actualOwner = this.csvOwners.findById(ownerId);
+        shadowReadConsistencyCheck(expectedOwner, actualOwner);
         return mav;
     }
+    
+    @Async
+    public void shadowReadConsistencyCheck(Collection<Owner> expected, Collection<Owner> actual) {
+    	Iterator<Owner> expectedOwner = expected.iterator();
+    	for (Owner actualOwner : actual){
+    		shadowReadConsistencyCheck(expectedOwner.next(), actualOwner);
+    	}
+    }
+    
+    @Async
+    public Future<Boolean> shadowReadConsistencyCheck(Owner expected, Owner actual) {
+    	boolean consistent = actual.isEqualTo(expected);
+    	if (!consistent) {
+    		System.out.println("Inconsistency found between Owners" + "\n" +
+    								expected.toString() + " and " + actual.toString());						
+    		//TODO: update the row in the shadowread
+    		csvOwners.updateOwner(expected, actual);
+    	}
+    	return new AsyncResult<Boolean>(consistent);
+    }
+    
 
     //Implementation of method to move data from the owners table to a text file
     public void forklift() {
@@ -177,7 +215,7 @@ class OwnerController {
             e.printStackTrace();
         }
     }
-
+    
     public int checkConsistency() {
         int inconsistencies = 0;
 
