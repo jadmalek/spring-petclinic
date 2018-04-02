@@ -223,7 +223,7 @@ class VetController {
         CSVReader reader = new CSVReader(new FileReader("new-datastore/vets.csv"));
 
         for (String[] actual : reader) {
-          if (actual[0] == String.valueOf(vetId)) {
+          if (actual[0].equals(String.valueOf(vetId))) {
             for (int i = 0; i < 2; i++) {
               vetData += actual[i] + ",";
             }
