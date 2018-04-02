@@ -288,6 +288,55 @@ class OwnerController {
         }
         return null;
     }
+    
+    public String readFromMySqlDataBase(int ownerId) {
+    	
+    	StringBuilder stringBuilder = new StringBuilder();
+    	try {
+	        Class.forName("com.mysql.jdbc.Driver").newInstance();
+	        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+	        String query = "SELECT * FROM owners WHERE id=?";
+	        PreparedStatement preparedSelect = conn.prepareStatement(query);
+	        preparedSelect.setInt(1, ownerId);
+	        
+	        Statement stmt = conn.createStatement();
+	        ResultSet rs = stmt.executeQuery(query);
+	        
+	        while (rs.next()) {
+	        	stringBuilder.append(rs.getString(1) + ",");
+	        	stringBuilder.append(rs.getString(2) + ",");
+	        	stringBuilder.append(rs.getString(3) + ",");
+	        	stringBuilder.append(rs.getString(4) + ",");
+	        	stringBuilder.append(rs.getString(5) + ",");
+	        }   	    
+    	} catch (Exception e) {
+            e.printStackTrace();
+        }
+    	
+        String ownerData = stringBuilder.toString();        
+    	return ownerData;
+    }
+    
+    public String readFromNewDataStore(int ownerId) {    	
+    	String ownerData = "";
+    	
+    	try {
+    		CSVReader reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
+    		
+    		for (String[] actual : reader) {
+    			if (actual[0] == String.valueOf(ownerId)) {
+    				for (int i = 0; i < 5; i++) {
+    					ownerData += actual[i] + ",";
+    				}
+    			}   		
+    		}    		
+    		
+    	} catch (Exception e) {
+            e.printStackTrace();
+        }
+    	
+    	return ownerData;
+    }
 
 }
 
