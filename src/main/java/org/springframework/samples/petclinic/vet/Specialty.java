@@ -170,7 +170,7 @@ public class Specialty extends NamedEntity implements Serializable {
 
         // the mysql insert statement
         String query = " INSERT into specialties (name)"
-          + " Values (?, ?, ?, ?)";
+          + " Values (?)";
 
         // Create the MySql insert query
         PreparedStatement preparedStmt = conn.prepareStatement(query);
@@ -191,7 +191,8 @@ public class Specialty extends NamedEntity implements Serializable {
 
         // Create the MySql insert query
         PreparedStatement preparedStmt = conn.prepareStatement(query);
-        preparedStmt.setInt(vetId, specialtyID);
+        preparedStmt.setInt(1, vetId);
+        preparedStmt.setInt(2, specialtyID);
 
         // execute the prepared statement
         preparedStmt.execute();
@@ -226,12 +227,11 @@ public class Specialty extends NamedEntity implements Serializable {
 			FileWriter fw = new FileWriter(filename, true);
 
 			writeToMySqlDataBaseVetSpecialties(vetId, specialityId);
-			String vet = retrieveIdOfVetSpecialtyFromDb(vetId);
 
 			// Append the new vet-specialty to the csv
-			fw.append((char)vetId);
+			fw.append(Integer.toString(vetId));
 			fw.append(',');
-			fw.append((char)specialityId);
+			fw.append(Integer.toString(specialityId));
 
 			fw.append('\n');
 			fw.flush();
@@ -259,22 +259,6 @@ public class Specialty extends NamedEntity implements Serializable {
 		}
 		return null;
 	}
-	
-	private String retrieveIdOfVetSpecialtyFromDb(int vetId) throws Exception {
 
-		Class.forName("com.mysql.jdbc.Driver").newInstance();
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
-		// Retrieve the id created
-		String selectQuery = "SELECT id FROM vet_specialties WHERE vetId=?";
-
-		PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
-		preparedSelect.setInt(1, vetId);
-
-		ResultSet rs = preparedSelect.executeQuery();
-		if (rs.next()) {
-			return Integer.toString(rs.getInt("id"));
-		}
-		return null;
-	}
 
 }

@@ -136,7 +136,7 @@ class VetController {
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
 
         // the mysql insert statement
-        String query = " INSERT into vets (firstName, lastName)"
+        String query = " INSERT into vets (first_name, last_name)"
           + " Values (?, ?)";
 
         // Create the MySql insert query
