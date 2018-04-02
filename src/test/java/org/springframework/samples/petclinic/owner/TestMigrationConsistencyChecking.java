@@ -76,8 +76,9 @@ public class TestMigrationConsistencyChecking {
 
 
 		//shadow Reads for validation (read will access both old and new)
-        
+
         assertEquals(ownerController.readFromMySqlDataBase(1), ownerController.readFromNewDataStore(1));
+        assertEquals(petController.readFromMySqlDataBase(1), petController.readFromNewDataStore(1));
 		// old will provide response
 		// consistency check that old == new
 

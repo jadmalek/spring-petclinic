@@ -166,7 +166,7 @@ class PetController {
                 for(int i=0;i<5;i++) {
                     int columnIndex = i+1;
                     if(!actual[i].equals(rs.getString(columnIndex))) {
-                    	System.out.println("Consistency Violation!\n" + 
+                    	System.out.println("Consistency Violation!\n" +
                 				"\n\t expected = " + rs.getString(columnIndex)
                 				+ "\n\t actual = " + actual[i]);
                     	//fix inconsistency
@@ -175,18 +175,18 @@ class PetController {
                     }
                 }
             }
-            
-            if (inconsistencies == 0) 
+
+            if (inconsistencies == 0)
             	System.out.println("No inconsistencies across former pets table dataset.");
             else
             	System.out.println("Number of Inconsistencies: " + inconsistencies);
-            
+
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
         return inconsistencies;
     }
-	
+
     public void writeToMySqlDataBase(String name, java.sql.Date birthDate, int typeId, int ownerId) throws Exception {
 
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -211,9 +211,9 @@ class PetController {
 		String filename = "new-datastore/pets.csv";
 		try {
 			FileWriter fw = new FileWriter(filename, true);
-			
+
 			java.sql.Date sqlBirthDate = new java.sql.Date(birthDate.getTime());
-			
+
 			writeToMySqlDataBase(name, sqlBirthDate, typeId, ownerId);
 			String petId = retrieveIdOfPetsFromDb(name, sqlBirthDate, typeId, ownerId);
 
@@ -259,4 +259,53 @@ class PetController {
 		return null;
 	}
 
+	public String readFromMySqlDataBase(int petId) {
+
+    	StringBuilder stringBuilder = new StringBuilder();
+    	try {
+	        Class.forName("com.mysql.jdbc.Driver").newInstance();
+	        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+	        String query = "SELECT * FROM pets WHERE id=?";
+	        PreparedStatement preparedSelect = conn.prepareStatement(query);
+	        preparedSelect.setInt(1, petId);
+
+	        Statement stmt = conn.createStatement();
+	        ResultSet rs = stmt.executeQuery(query);
+
+	        while (rs.next()) {
+	        	stringBuilder.append(rs.getString(1) + ",");
+	        	stringBuilder.append(rs.getString(2) + ",");
+	        	stringBuilder.append(rs.getString(3) + ",");
+	        	stringBuilder.append(rs.getString(4) + ",");
+	        }
+    	} catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String petData = stringBuilder.toString();
+    	return petData;
+    }
+
+    public String readFromNewDataStore(int petId) {
+    	String petData = "";
+
+    	try {
+    		CSVReader reader = new CSVReader(new FileReader("new-datastore/pets.csv"));
+
+    		for (String[] actual : reader) {
+    			if (actual[0] == String.valueOf(petId)) {
+    				for (int i = 0; i < 4; i++) {
+    					petData += actual[i] + ",";
+    				}
+    			}
+    		}
+
+    	} catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    	return petData;
+    }
+
 }
+g
