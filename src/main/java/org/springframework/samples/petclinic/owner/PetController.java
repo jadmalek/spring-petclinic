@@ -112,6 +112,8 @@ class PetController {
 	@GetMapping("/pets/{petId}/edit")
 	public String initUpdateForm(@PathVariable("petId") int petId, ModelMap model) {
 		Pet pet = this.pets.findById(petId);
+		Pet pet2 = csvpets.findById(petId);
+		shadowReadConsistencyCheck(pet, pet2);
 		model.put("pet", pet);
 		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 	}

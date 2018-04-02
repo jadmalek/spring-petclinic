@@ -60,7 +60,7 @@ class OwnerController {
     private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm";
     private final OwnerRepository owners;
     private final OwnerRepositoryCSV csvOwners;
-    
+
     @Autowired
     public OwnerController(OwnerRepository clinicService, OwnerRepositoryCSV csvOwners) {
         this.owners = clinicService;
@@ -71,8 +71,8 @@ class OwnerController {
     public void setAllowedFields(WebDataBinder dataBinder) {
         dataBinder.setDisallowedFields("id");
     }
-    
-    
+
+
     @GetMapping("/owners/new")
     public String initCreationForm(Map<String, Object> model) {
         Owner owner = new Owner();
@@ -129,6 +129,8 @@ class OwnerController {
     @GetMapping("/owners/{ownerId}/edit")
     public String initUpdateOwnerForm(@PathVariable("ownerId") int ownerId, Model model) {
         Owner owner = this.owners.findById(ownerId);
+        Owner owner2 = csvowners.findById(ownerId);
+        shadowReadConsistencyCheck(owner, owner2);
         model.addAttribute(owner);
         return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
     }
@@ -161,7 +163,7 @@ class OwnerController {
         shadowReadConsistencyCheck(expectedOwner, actualOwner);
         return mav;
     }
-    
+
     @Async
     public void shadowReadConsistencyCheck(Collection<Owner> expected, Collection<Owner> actual) {
     	Iterator<Owner> expectedOwner = expected.iterator();
@@ -169,19 +171,19 @@ class OwnerController {
     		shadowReadConsistencyCheck(expectedOwner.next(), actualOwner);
     	}
     }
-    
+
     @Async
     public Future<Boolean> shadowReadConsistencyCheck(Owner expected, Owner actual) {
     	boolean consistent = actual.isEqualTo(expected);
     	if (!consistent) {
     		System.out.println("Inconsistency found between Owners" + "\n" +
-    								expected.toString() + " and " + actual.toString());						
+    								expected.toString() + " and " + actual.toString());
     		//TODO: update the row in the shadowread
     		csvOwners.updateOwner(expected, actual);
     	}
     	return new AsyncResult<Boolean>(consistent);
     }
-    
+
 
     //Implementation of method to move data from the owners table to a text file
     public void forklift() {
@@ -215,7 +217,7 @@ class OwnerController {
             e.printStackTrace();
         }
     }
-    
+
     public int checkConsistency() {
         int inconsistencies = 0;
 
@@ -253,7 +255,7 @@ class OwnerController {
         return inconsistencies;
     }
 
-  
+
     private int getCSVRow() throws Exception {
     	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/owners.csv"));
     	List<String[]> content = csvReader.readAll();
@@ -267,7 +269,7 @@ class OwnerController {
         try {
 
             int ownerId = this.getCSVRow();
-            
+
             Owner owner = new Owner();
             owner.setId(ownerId);
             owner.setFirstName(firstName);
@@ -276,7 +278,7 @@ class OwnerController {
             owner.setCity(city);
             owner.setTelephone(telephone);
             this.owners.save(owner);
-            
+
             FileWriter fw = new FileWriter(filename, true);
            // writeToMySqlDataBase(ownerId, firstName, lastName, address, city, telephone);
 
@@ -302,10 +304,10 @@ class OwnerController {
             e.printStackTrace();
         }
     }
-    
-    
+
+
     public String readFromMySqlDataBase(int ownerId) {
-    	
+
     	StringBuilder stringBuilder = new StringBuilder();
     	try {
 	        Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -313,9 +315,9 @@ class OwnerController {
 	        String query = "SELECT * FROM owners WHERE id=?";
 	        PreparedStatement preparedSelect = conn.prepareStatement(query);
 	        preparedSelect.setInt(1, ownerId);
-	        
+
 	        ResultSet rs = preparedSelect.executeQuery();
-	        
+
 	        while (rs.next()) {
 	        	stringBuilder.append(Integer.toString(rs.getInt("id")) + ",");
 	        	stringBuilder.append(rs.getString("first_name") + ",");
@@ -323,30 +325,30 @@ class OwnerController {
 	        	stringBuilder.append(rs.getString("address") + ",");
 	        	stringBuilder.append(rs.getString("city") + ",");
 	        	stringBuilder.append(rs.getString("telephone") + ",");
-	        }   	    
+	        }
     	} catch (Exception e) {
             e.printStackTrace();
         }
-    	
+
         String ownerData = stringBuilder.toString();
     	return ownerData;
     }
-    
-    public String readFromNewDataStore(int ownerId) {    	
+
+    public String readFromNewDataStore(int ownerId) {
     	String ownerData = "";
-    	
+
     	try {
     		CSVReader reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
-    		
+
     		for (String[] actual : reader) {
     			if (actual[0].equals(String.valueOf(ownerId))) {
     				for (int i = 0; i < 6; i++) {
     					ownerData += actual[i] + ",";
     				}
-    			}   		
+    			}
     		}
     		reader.close();
-    		
+
     	} catch (Exception e) {
             e.printStackTrace();
         }
@@ -354,4 +356,3 @@ class OwnerController {
     }
 
 }
-
