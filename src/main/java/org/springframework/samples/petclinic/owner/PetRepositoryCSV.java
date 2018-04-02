@@ -89,8 +89,8 @@ public class PetRepositoryCSV implements PetRepository{
 		pet.setId(petId);
 		pet.setBirthDate(birthDate);
 		pet.setName(name);
-		pet.setType(typeId);
-		pet.setOwner(ownerId);
+		//pet.setType(typeId);
+		//pet.setOwner(ownerId);
 		save(pet);
 		return pet;
 	}
@@ -102,15 +102,15 @@ public class PetRepositoryCSV implements PetRepository{
 						FileWriter fw = new FileWriter(filename, true);
 
 						//Append the new owner to the csv
-						fw.append(Integer.toString(petId));
+						fw.append(Integer.toString(pet.getId()));
 						fw.append(',');
-						fw.append(name);
+						fw.append(pet.getName());
 						fw.append(',');
-						fw.append(sqlBirthDate.toString());
+						fw.append(pet.getBirthDate().toString());
 						fw.append(',');
-						fw.append(Integer.toString(typeId));
+						fw.append(pet.getType().getName());
 						fw.append(',');
-						fw.append(Integer.toString(ownerId));
+						fw.append(Integer.toString(pet.getOwner().getId()));
 						fw.append(',');
 						fw.append('\n');
 						fw.flush();
@@ -160,14 +160,14 @@ public class PetRepositoryCSV implements PetRepository{
 	}
 
 	private Pet constructPet(String[] row) {
-		Pet newTypet = new Pet();
+		Pet newPet = new Pet();
 		newPet.setId(Integer.parseInt(row[0]));
 		newPet.setName(row[1]);
 		newPet.setBirthDate(new Date(Long.parseLong(row[2])));
 		newPet.setType(findPetTypeById(Integer.parseInt(row[3])));
 		// Also do something about the owner?????? Problem is a circular dependency
 
-		return new pet;
+		return newPet;
 	}
 
 	public void updatePet(Pet correctPet, Pet petToBeUpdated) {

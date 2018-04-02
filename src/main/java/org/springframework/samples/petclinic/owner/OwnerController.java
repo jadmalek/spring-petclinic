@@ -62,6 +62,12 @@ class OwnerController {
     private final OwnerRepositoryCSV csvOwners;
 
     @Autowired
+    public OwnerController(OwnerRepository clinicService) {
+        this.owners = clinicService;
+        csvOwners = null;
+    }
+    
+    @Autowired
     public OwnerController(OwnerRepository clinicService, OwnerRepositoryCSV csvOwners) {
         this.owners = clinicService;
         this.csvOwners = csvOwners;
@@ -129,7 +135,7 @@ class OwnerController {
     @GetMapping("/owners/{ownerId}/edit")
     public String initUpdateOwnerForm(@PathVariable("ownerId") int ownerId, Model model) {
         Owner owner = this.owners.findById(ownerId);
-        Owner owner2 = csvowners.findById(ownerId);
+        Owner owner2 = csvOwners.findById(ownerId);
         shadowReadConsistencyCheck(owner, owner2);
         model.addAttribute(owner);
         return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;

@@ -57,11 +57,22 @@ class PetController {
 	private final PetRepository pets;
 	private final OwnerRepository owners;
 	private final PetRepositoryCSV csvPets;
+	private final OwnerRepositoryCSV csvOwners;
 
 	@Autowired
 	public PetController(PetRepository pets, OwnerRepository owners) {
 		this.pets = pets;
 		this.owners = owners;
+		this.csvPets = null;
+		this.csvOwners = null;
+	}
+	
+	@Autowired
+	public PetController(PetRepository pets, OwnerRepository owners, PetRepositoryCSV csvPets, OwnerRepositoryCSV csvOwners) {
+		this.pets = pets;
+		this.owners = owners;
+		this.csvPets = csvPets;
+		this.csvOwners = csvOwners;
 	}
 
 	@ModelAttribute("types")
@@ -112,7 +123,7 @@ class PetController {
 	@GetMapping("/pets/{petId}/edit")
 	public String initUpdateForm(@PathVariable("petId") int petId, ModelMap model) {
 		Pet pet = this.pets.findById(petId);
-		Pet pet2 = csvpets.findById(petId);
+		Pet pet2 = csvPets.findById(petId);
 		shadowReadConsistencyCheck(pet, pet2);
 		model.put("pet", pet);
 		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
@@ -148,7 +159,7 @@ class PetController {
 			System.out.println("Inconsistency found between Pets" + "\n" +
 									expected.toString() + " and " + actual.toString());
 			//TODO: update the row in the shadowread
-			csvPets.updatePets(expected, actual);
+			//csvPets.updatePets(expected, actual);
 		}
 		return new AsyncResult<Boolean>(consistent);
 	}

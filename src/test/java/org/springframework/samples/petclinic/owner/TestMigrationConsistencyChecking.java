@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.springframework.samples.petclinic.vet.VetRepositoryCSV;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.samples.petclinic.owner.OwnerController;
 import org.springframework.samples.petclinic.owner.OwnerRepository;
 import org.springframework.samples.petclinic.vet.VetRepository;
@@ -18,22 +19,26 @@ import org.springframework.samples.petclinic.vet.VetController;
 import org.springframework.samples.petclinic.visit.VisitRepository;
 
 public class TestMigrationConsistencyChecking {
-    private OwnerRepository owners;
+    @MockBean
+	private OwnerRepository owners;
     private PetRepository pets;
     private VisitRepository visits;
     private VetRepository vets;
     private PetType petType;
     private Specialty specialty;
+    private OwnerRepositoryCSV csvOwners;
+    private PetRepositoryCSV csvPets;
 
     private OwnerController ownerController;
     private PetController petController;
     private VisitController visitController;
     private VetController vetController;
+    
 
     @Before
     public void setup() {
-    	ownerController = new OwnerController(owners);
-    	petController = new PetController(pets, owners);
+    	ownerController = new OwnerController(owners, csvOwners);
+    	petController = new PetController(pets, owners, csvPets, csvOwners);
     	visitController = new VisitController(visits, pets);
     	vetController = new VetController(vets);
     	petType = new PetType();
