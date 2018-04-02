@@ -36,6 +36,7 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -165,18 +166,19 @@ class VisitController {
         return inconsistencies;
     }
     
-    public void writeToMySqlDataBase(int petId, java.sql.Date visitDate, String description) throws Exception {
+    public void writeToMySqlDataBase(int visitId, int petId, java.sql.Date visitDate, String description) throws Exception {
 
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
 
-        String query = " INSERT into visits (pet_id, visit_date, description)"
-          + " Values (?, ?, ?)";
+        String query = " INSERT into visits (id, pet_id, visit_date, description)"
+          + " Values (?, ?, ?, ?)";
 
         PreparedStatement preparedStmt = conn.prepareStatement(query);
-        preparedStmt.setInt(1, petId);
-        preparedStmt.setDate(2, visitDate);
-        preparedStmt.setString(3, description);
+        preparedStmt.setInt(1,  visitId);
+        preparedStmt.setInt(2, petId);
+        preparedStmt.setDate(3, visitDate);
+        preparedStmt.setString(4, description);
 
         preparedStmt.execute();
     }
@@ -184,16 +186,16 @@ class VisitController {
     public void writeToFile(int petId, Date visitDate, String description) {
     	String filename ="new-datastore/visits.csv";
         try {
+        	int visitId = getCSVRow();
             FileWriter fw = new FileWriter(filename, true);
 
             //Convert the java.util.Date to java.sql.Date
             java.sql.Date sqlDate = new java.sql.Date(visitDate.getTime());
 
-            writeToMySqlDataBase(petId, sqlDate, description);
-            String visitId = retrieveIdOfVisitFromDb(petId, sqlDate, description);
+            writeToMySqlDataBase(visitId, petId, sqlDate, description);
 
             //Append the new visit to the csv
-            fw.append(visitId);
+            fw.append(Integer.toString(visitId));
             fw.append(',');
             fw.append(Integer.toString(petId));
             fw.append(',');
@@ -210,22 +212,12 @@ class VisitController {
         }
     }
     
-    private String retrieveIdOfVisitFromDb(int petId, java.sql.Date visitDate, String description) throws Exception{
-    	Class.forName("com.mysql.jdbc.Driver").newInstance();
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
-
-        //Retrieve the id created
-        String selectQuery= "SELECT id FROM visits WHERE pet_id=? AND visit_date =? AND description =?";
-
-        PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
-        preparedSelect.setInt(1, petId);
-        preparedSelect.setDate(2, visitDate);
-        preparedSelect.setString(3, description);
-
-        ResultSet rs = preparedSelect.executeQuery();
-        if(rs.next()){
-        	return Integer.toString(rs.getInt("id"));
-        }
-        return null;
+    private int getCSVRow() throws Exception {
+    	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/visits.csv"));
+    	List<String[]> content = csvReader.readAll();
+    	//Returning size + 1 to avoid id of 0
+    	csvReader.close();
+    	return content.size() + 1;
     }
+    
 }

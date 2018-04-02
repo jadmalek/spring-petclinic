@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -163,18 +164,19 @@ public class Specialty extends NamedEntity implements Serializable {
         return inconsistencies;
     }
 
-    public void writeToMySqlDataBaseSpecialties(String name) throws Exception {
+    public void writeToMySqlDataBaseSpecialties(int specialtyId, String name) throws Exception {
 
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
 
         // the mysql insert statement
-        String query = " INSERT into specialties (name)"
-          + " Values (?)";
+        String query = " INSERT into specialties (id, name)"
+          + " Values (?, ?)";
 
         // Create the MySql insert query
         PreparedStatement preparedStmt = conn.prepareStatement(query);
-        preparedStmt.setString(1, name);
+        preparedStmt.setInt(1, specialtyId);
+        preparedStmt.setString(2,  name);
 
         // execute the prepared statement
         preparedStmt.execute();
@@ -201,13 +203,13 @@ public class Specialty extends NamedEntity implements Serializable {
 	public void writeToFileSpecialties(String name) {
 		String filename = "new-datastore/specialties.csv";
 		try {
+			int specialtyId = getCSVRowForSpecialty();
 			FileWriter fw = new FileWriter(filename, true);
 
-			writeToMySqlDataBaseSpecialties(name);
-			String specialtyId = retrieveIdOfSpecialtyFromDb(name);
+			writeToMySqlDataBaseSpecialties(specialtyId, name);
 
 			// Append the new owner to the csv
-			fw.append(specialtyId);
+			fw.append(Integer.toString(specialtyId));
 			fw.append(',');
 			fw.append(name);
 			fw.append(',');
@@ -243,22 +245,21 @@ public class Specialty extends NamedEntity implements Serializable {
 		}
 	}
 
-	private String retrieveIdOfSpecialtyFromDb(String name) throws Exception {
-
-		Class.forName("com.mysql.jdbc.Driver").newInstance();
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
-		// Retrieve the id created
-		String selectQuery = "SELECT id FROM specialties WHERE name=?";
-
-		PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
-		preparedSelect.setString(1, name);
-
-		ResultSet rs = preparedSelect.executeQuery();
-		if (rs.next()) {
-			return Integer.toString(rs.getInt("id"));
-		}
-		return null;
-	}
-
+    private int getCSVRowForSpecialty() throws Exception {
+    	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/specialties.csv"));
+    	List<String[]> content = csvReader.readAll();
+    	csvReader.close();
+    	//Returning size + 1 to avoid id of 0
+    	return content.size() + 1;
+    }
+    
+    private int getCSVRowForVetSpecialty() throws Exception {
+    	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/vet-specialties.csv"));
+    	List<String[]> content = csvReader.readAll();
+    	csvReader.close();
+    	//Returning size + 1 to avoid id of 0
+    	return content.size() + 1;
+    }
+    
 
 }

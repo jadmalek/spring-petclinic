@@ -242,6 +242,7 @@ class OwnerController {
     	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/owners.csv"));
     	List<String[]> content = csvReader.readAll();
     	//Returning size + 1 to avoid id of 0
+    	csvReader.close();
     	return content.size() + 1;
     }
 
@@ -285,29 +286,5 @@ class OwnerController {
             e.printStackTrace();
         }
     }
-    
-    private String retrieveIdOfOwnerFromDb(String firstName, String lastName, 
-    										String address, String city, String telephone) throws Exception{
-    	
-    	Class.forName("com.mysql.jdbc.Driver").newInstance();
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
-        //Retrieve the id created
-        String selectQuery= "SELECT id FROM owners WHERE first_name=?" +
-        					" AND last_name=? AND address=? AND city=? AND telephone=?";
-
-        PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
-        preparedSelect.setString(1, firstName);
-        preparedSelect.setString(2, lastName);
-        preparedSelect.setString(3, address);
-        preparedSelect.setString(4, city);
-        preparedSelect.setString(5, telephone);
-
-        ResultSet rs = preparedSelect.executeQuery();
-        if(rs.next()){
-        	return Integer.toString(rs.getInt("id"));
-        }
-        return null;
-    }
-
 }
 
