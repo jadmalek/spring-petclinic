@@ -145,5 +145,51 @@ public class PetType extends NamedEntity {
     	//Returning size + 1 to avoid id of 0
     	return content.size() + 1;
     }
+    
+    public String readFromMySqlDataBase(int typeId) {
+    	
+    	StringBuilder stringBuilder = new StringBuilder();
+    	try {
+    		Class.forName("com.mysql.jdbc.Driver").newInstance();
+	        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+	        String query = "SELECT * FROM types WHERE id=?";
+	        PreparedStatement preparedSelect = conn.prepareStatement(query);
+	        preparedSelect.setInt(1, typeId);
+	        
+	        ResultSet rs = preparedSelect.executeQuery();
+	        
+	        while(rs.next()) {
+	        	stringBuilder.append(Integer.toString(rs.getInt("id")) + ",");
+	        	stringBuilder.append(rs.getString("name") + ",");
+	        }
+    	} 	catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    	
+    	String petType = stringBuilder.toString();
+    	return petType;	        	      	        		        
+    	}
+    
 
+
+	public String readFromNewDataStore(int typeId) {
+		String petType = "";
+		
+		try {
+			CSVReader reader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
+			
+			for (String[] actual : reader) {
+    			if (actual[0].equals(String.valueOf(typeId))) {
+    				for (int i = 0; i < 2; i++) {
+    					petType += actual[i] + ",";
+    				}
+    			}
+    		}
+			reader.close();
+
+    	} catch (Exception e) {
+            e.printStackTrace();
+        }
+    	return petType;
+    }
 }

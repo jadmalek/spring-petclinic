@@ -220,4 +220,52 @@ class VisitController {
     	return content.size() + 1;
     }
     
+    public String readFromMySqlDataBase(int visitId) {
+
+    	StringBuilder stringBuilder = new StringBuilder();
+    	try {
+	        Class.forName("com.mysql.jdbc.Driver").newInstance();
+	        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+	        String query = "SELECT * FROM visits WHERE id=?";
+	        PreparedStatement preparedSelect = conn.prepareStatement(query);
+	        preparedSelect.setInt(1, visitId);
+
+	        ResultSet rs = preparedSelect.executeQuery();
+
+	        while (rs.next()) {
+	        	stringBuilder.append(Integer.toString(rs.getInt("id")) + ",");
+	        	stringBuilder.append(Integer.toString(rs.getInt("pet_id")) + ",");
+	        	stringBuilder.append(rs.getDate("visit_date") + ",");
+	        	stringBuilder.append(rs.getString("description") + ",");
+	        }
+    	} catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String visitData = stringBuilder.toString();
+    	return visitData;
+    }
+
+    public String readFromNewDataStore(int visitId) {
+    	String visitData = "";
+
+    	try {
+    		CSVReader reader = new CSVReader(new FileReader("new-datastore/visits.csv"));
+
+    		for (String[] actual : reader) {
+    			if (actual[0].equals(String.valueOf(visitId))) {
+    				for (int i = 0; i < 4; i++) {
+    					visitData += actual[i] + ",";
+    				}
+    			}
+    		}
+    		reader.close();
+
+    	} catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    	return visitData;
+    }
+
 }
