@@ -170,6 +170,31 @@ public class PetRepositoryCSV implements PetRepository{
 		return new pet;
 	}
 
+	public void updatePet(Pet correctPet, Pet petToBeUpdated) {
+		CSVReader reader = null;
+		try{
+			reader = new CSVReader(new FileReader("new-datastore/pets.csv"));
+
+	        for(String[] actual : reader) {
+	        	//find the row of the owner to be updated, and update with new owner info
+	        	if (actual[0].equals(String.valueOf(correctPet.getId())) ) {
+	        		actual[1] = petToBeUpdated.getName();
+	        		actual[2] = petToBeUpdated.getBirthDate().toString();
+	        		actual[3] = petToBeUpdated.getOwner().toString();
+	        		actual[4] = petToBeUpdated.getType().toString();
+	        	}
+	        }
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				reader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}	
+	}
+	
 	private int getCSVRow() throws Exception {
 		CSVReader csvReader = new CSVReader(new FileReader("new-datastore/pets.csv"));
 		List<String[]> content = csvReader.readAll();
