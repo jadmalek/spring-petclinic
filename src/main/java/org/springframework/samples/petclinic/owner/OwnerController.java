@@ -29,8 +29,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
+
 import java.io.FileReader;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import java.io.FileWriter;
@@ -53,7 +55,6 @@ class OwnerController {
     private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm";
     private final OwnerRepository owners;
 
-
     @Autowired
     public OwnerController(OwnerRepository clinicService) {
         this.owners = clinicService;
@@ -63,7 +64,8 @@ class OwnerController {
     public void setAllowedFields(WebDataBinder dataBinder) {
         dataBinder.setDisallowedFields("id");
     }
-
+    
+    
     @GetMapping("/owners/new")
     public String initCreationForm(Map<String, Object> model) {
         Owner owner = new Owner();
@@ -213,38 +215,57 @@ class OwnerController {
         return inconsistencies;
     }
 
-    public void writeToMySqlDataBase(String firstName, String lastName, String address, 
+    public void writeToMySqlDataBase(int id, String firstName, String lastName, String address, 
     		String city, String telephone) throws Exception {
 
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
 
         // the mysql insert statement
-        String query = " INSERT into owners (first_name, last_name, address, city, telephone)"
-          + " Values (?, ?, ?, ?, ?)";
+        String query = " INSERT into owners (id, first_name, last_name, address, city, telephone)"
+          + " Values (?, ?, ?, ?, ?, ?)";
 
         // Create the MySql insert query
         PreparedStatement preparedStmt = conn.prepareStatement(query);
-        preparedStmt.setString(1, firstName);
-        preparedStmt.setString(2, lastName);
-        preparedStmt.setString(3, address);
-        preparedStmt.setString(4, city);
-        preparedStmt.setString(5, telephone);
+        preparedStmt.setInt(1, id);
+        preparedStmt.setString(2, firstName);
+        preparedStmt.setString(3, lastName);
+        preparedStmt.setString(4, address);
+        preparedStmt.setString(5, city);
+        preparedStmt.setString(6, telephone);
 
         // execute the preparedstatement
         preparedStmt.execute();
+    }
+    
+    private int getCSVRow() throws Exception {
+    	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/owners.csv"));
+    	List<String[]> content = csvReader.readAll();
+    	//Returning size + 1 to avoid id of 0
+    	csvReader.close();
+    	return content.size() + 1;
     }
 
     public void writeToFile(String firstName, String lastName, String address, String city, String telephone) {
     	String filename ="new-datastore/owners.csv";
         try {
+            /*Owner owner = new Owner();
+            owner.setId(this.getOwnerId());
+            owner.setFirstName(firstName);
+            owner.setLastName(lastName);
+            owner.setAddress(address);
+            owner.setCity(city);
+            owner.setTelephone(telephone);
+            this.owners.save(owner);*/
+            
+            int ownerId = this.getCSVRow();
+            
+            
             FileWriter fw = new FileWriter(filename, true);
-
-            writeToMySqlDataBase(firstName, lastName, address, city, telephone);
-            String ownerId = retrieveIdOfOwnerFromDb(firstName, lastName, address, city, telephone);
+            writeToMySqlDataBase(ownerId, firstName, lastName, address, city, telephone);
 
             //Append the new owner to the csv
-            fw.append(ownerId);
+            fw.append(Integer.toString(ownerId));
             fw.append(',');
             fw.append(firstName);
             fw.append(',');
@@ -266,28 +287,6 @@ class OwnerController {
         }
     }
     
-    private String retrieveIdOfOwnerFromDb(String firstName, String lastName, 
-    										String address, String city, String telephone) throws Exception{
-    	
-    	Class.forName("com.mysql.jdbc.Driver").newInstance();
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
-        //Retrieve the id created
-        String selectQuery= "SELECT id FROM owners WHERE first_name=?" +
-        					" AND last_name=? AND address=? AND city=? AND telephone=?";
-
-        PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
-        preparedSelect.setString(1, firstName);
-        preparedSelect.setString(2, lastName);
-        preparedSelect.setString(3, address);
-        preparedSelect.setString(4, city);
-        preparedSelect.setString(5, telephone);
-
-        ResultSet rs = preparedSelect.executeQuery();
-        if(rs.next()){
-        	return Integer.toString(rs.getInt("id"));
-        }
-        return null;
-    }
     
     public String readFromMySqlDataBase(int ownerId) {
     	
@@ -299,21 +298,21 @@ class OwnerController {
 	        PreparedStatement preparedSelect = conn.prepareStatement(query);
 	        preparedSelect.setInt(1, ownerId);
 	        
-	        Statement stmt = conn.createStatement();
-	        ResultSet rs = stmt.executeQuery(query);
+	        ResultSet rs = preparedSelect.executeQuery();
 	        
 	        while (rs.next()) {
-	        	stringBuilder.append(rs.getString(1) + ",");
-	        	stringBuilder.append(rs.getString(2) + ",");
-	        	stringBuilder.append(rs.getString(3) + ",");
-	        	stringBuilder.append(rs.getString(4) + ",");
-	        	stringBuilder.append(rs.getString(5) + ",");
+	        	stringBuilder.append(Integer.toString(rs.getInt("id")) + ",");
+	        	stringBuilder.append(rs.getString("first_name") + ",");
+	        	stringBuilder.append(rs.getString("last_name") + ",");
+	        	stringBuilder.append(rs.getString("address") + ",");
+	        	stringBuilder.append(rs.getString("city") + ",");
+	        	stringBuilder.append(rs.getString("telephone") + ",");
 	        }   	    
     	} catch (Exception e) {
             e.printStackTrace();
         }
     	
-        String ownerData = stringBuilder.toString();        
+        String ownerData = stringBuilder.toString();
     	return ownerData;
     }
     
@@ -324,17 +323,18 @@ class OwnerController {
     		CSVReader reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
     		
     		for (String[] actual : reader) {
-    			if (actual[0] == String.valueOf(ownerId)) {
-    				for (int i = 0; i < 5; i++) {
+    			if (actual[0].equals(String.valueOf(ownerId))) {
+    				for (int i = 0; i < 6; i++) {
+    					System.out.println("umm in csv: " + actual[i]);
     					ownerData += actual[i] + ",";
     				}
     			}   		
-    		}    		
+    		}
+    		reader.close();
     		
     	} catch (Exception e) {
             e.printStackTrace();
         }
-    	
     	return ownerData;
     }
 

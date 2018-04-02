@@ -64,13 +64,13 @@ public class TestMigrationConsistencyChecking {
         petController.writeToFile("Buddy", new Date(), 1, 1);
         visitController.writeToFile(1, new Date(), "An annual checkup");
         vetController.writeToFile("Sophia", "Squash");
-        specialty.writeToFileVetSpecialties(1, 2);
+        specialty.writeToFileSpecialties("Specialty1");
+        specialty.writeToFileVetSpecialties(1, 1);
         assertEquals(0, ownerController.checkConsistency());
         assertEquals(0, petController.checkConsistency());
         assertEquals(0, petType.checkConsistency());
         assertEquals(0, visitController.checkConsistency());
         assertEquals(0, vetController.checkConsistency());
-        specialty.writeToFileSpecialties("Specialty1");
         assertEquals(0, specialty.checkSpecialtiesConsistency());
         assertEquals(0, specialty.checkVetSpecialtiesConsistency());
 

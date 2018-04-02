@@ -22,6 +22,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
+
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -97,16 +99,17 @@ public class PetType extends NamedEntity {
         return inconsistencies;
     }
     
-    public void writeToMySqlDataBase(String name) throws Exception {
+    public void writeToMySqlDataBase(int typeId, String name) throws Exception {
 
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
 
-        String query = " INSERT into types (name)"
-          + " Values (?)";
+        String query = " INSERT into types (id, name)"
+          + " Values (?, ?)";
 
         PreparedStatement preparedStmt = conn.prepareStatement(query);
-        preparedStmt.setString(1, name);
+        preparedStmt.setInt(1, typeId);
+        preparedStmt.setString(2, name);
 
         // execute the preparedstatement
         preparedStmt.execute();
@@ -115,13 +118,13 @@ public class PetType extends NamedEntity {
     public void writeToFile(String name) {
     	String filename ="new-datastore/pet-types.csv";
         try {
+            int typeId = getCSVRow();
             FileWriter fw = new FileWriter(filename, true);
 
-            writeToMySqlDataBase(name);
-            String typeId = retrieveIdOfTypeFromDb(name);
+            writeToMySqlDataBase(typeId, name);
 
             //Append the new type to the csv
-            fw.append(typeId);
+            fw.append(Integer.toString(typeId));
             fw.append(',');
             fw.append(name);
             fw.append('\n');
@@ -133,22 +136,14 @@ public class PetType extends NamedEntity {
             e.printStackTrace();
         }
     }
+
     
-    private String retrieveIdOfTypeFromDb(String name) throws Exception{
-
-    	Class.forName("com.mysql.jdbc.Driver").newInstance();
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
-
-        String selectQuery= "SELECT id FROM types WHERE name=?";
-
-        PreparedStatement preparedSelect = conn.prepareStatement(selectQuery);
-        preparedSelect.setString(1, name);
-
-        ResultSet rs = preparedSelect.executeQuery();
-        if(rs.next()){
-        	return Integer.toString(rs.getInt("id"));
-        }
-        return null;
+    private int getCSVRow() throws Exception {
+    	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
+    	List<String[]> content = csvReader.readAll();
+    	csvReader.close();
+    	//Returning size + 1 to avoid id of 0
+    	return content.size() + 1;
     }
 
 }
