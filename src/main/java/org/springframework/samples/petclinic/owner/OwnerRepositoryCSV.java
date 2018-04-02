@@ -132,18 +132,14 @@ public class OwnerRepositoryCSV implements OwnerRepository{
 			reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
 
 	        for(String[] actual : reader) {
-	        	//TODO: UPDATE THE OWNER ACCORDINGLY 
-	        	//Find the row corresponding to "ownerToBeUpdated" and replace with "correctOwner"
-	           /* for(int i=0;i<6;i++) {
-	                int columnIndex = i+1;
-	                if(actual[i].equals(ownerToBeUpdated.toString())) {
-	                	System.out.println("Consistency Violation!\n" +
-	            				"\n\t expected = " + rs.getString(columnIndex)
-	            				+ "\n\t actual = " + actual[i]);
-	                    //fix inconsistency
-	                	//actual[i] =;
-	                }
-	            }*/
+	        	//find the row of the owner to be updated, and update with new owner info
+	        	if (actual[0].equals(String.valueOf(correctOwner.getId())) ) {
+	        		actual[1] = ownerToBeUpdated.getFirstName();
+	        		actual[2] = ownerToBeUpdated.getLastName();
+	        		actual[3] = ownerToBeUpdated.getAddress();
+	        		actual[4] = ownerToBeUpdated.getCity();
+	        		actual[5] = ownerToBeUpdated.getTelephone();       		
+	        	}
 	        }
 		} catch (Exception e) {
 			e.printStackTrace();
