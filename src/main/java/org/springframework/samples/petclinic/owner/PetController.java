@@ -259,14 +259,14 @@ class PetController {
 	        PreparedStatement preparedSelect = conn.prepareStatement(query);
 	        preparedSelect.setInt(1, petId);
 
-	        Statement stmt = conn.createStatement();
-	        ResultSet rs = stmt.executeQuery(query);
+	        ResultSet rs = preparedSelect.executeQuery();
 
 	        while (rs.next()) {
-	        	stringBuilder.append(rs.getString(1) + ",");
-	        	stringBuilder.append(rs.getString(2) + ",");
-	        	stringBuilder.append(rs.getString(3) + ",");
-	        	stringBuilder.append(rs.getString(4) + ",");
+	        	stringBuilder.append(rs.getInt("id") + ",");
+	        	stringBuilder.append(rs.getString("name") + ",");
+	        	stringBuilder.append(rs.getDate("birth_date") + ",");
+	        	stringBuilder.append(rs.getInt("type_id") + ",");
+	        	stringBuilder.append(rs.getInt("owner_id") + ",");
 	        }
     	} catch (Exception e) {
             e.printStackTrace();
@@ -283,8 +283,8 @@ class PetController {
     		CSVReader reader = new CSVReader(new FileReader("new-datastore/pets.csv"));
 
     		for (String[] actual : reader) {
-    			if (actual[0] == String.valueOf(petId)) {
-    				for (int i = 0; i < 4; i++) {
+    			if (actual[0].equals(String.valueOf(petId))) {
+    				for (int i = 0; i < 5; i++) {
     					petData += actual[i] + ",";
     				}
     			}
