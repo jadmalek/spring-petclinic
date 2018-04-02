@@ -17,6 +17,9 @@ package org.springframework.samples.petclinic.vet;
 
 import com.opencsv.CSVReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -30,6 +33,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * @author Juergen Hoeller
@@ -93,8 +97,9 @@ class VetController {
             e.printStackTrace();
         }
     }
-
-    public int checkConsistency() {
+    @Async
+    @Scheduled(fixedDelay = 5000)
+    public Future<Integer> checkConsistency() {
         int inconsistencies = 0;
 
         try {
@@ -110,7 +115,7 @@ class VetController {
                 for(int i=0;i<3;i++) {
                     int columnIndex = i+1;
                     if(!actual[i].equals(rs.getString(columnIndex))) {
-                    	System.out.println("Consistency Violation!\n" +
+                    	System.out.println("Vets Table Consistency Violation!\n" +
                 				"\n\t expected = " + rs.getString(columnIndex)
                 				+ "\n\t actual = " + actual[i]);
                     	//fix inconsistency
@@ -123,12 +128,12 @@ class VetController {
             if (inconsistencies == 0)
             	System.out.println("No inconsistencies across former vets table dataset.");
             else
-            	System.out.println("Number of Inconsistencies: " + inconsistencies);
+            	System.out.println("Number of Inconsistencies for Vets Table: " + inconsistencies);
 
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
-        return inconsistencies;
+        return new AsyncResult<Integer>(inconsistencies);
     }
 
     public void writeToMySqlDataBase(int vetId, String firstName, String lastName) throws Exception {
