@@ -160,13 +160,22 @@ public class PetRepositoryCSV implements PetRepository{
 	}
 
 	private Pet constructPet(String[] row) {
-		Pet pet = new Pet();
-		pet.setId(Integer.parseInt(row[0]));
-		pet.setName(row[1]);
-		pet.setBirthDate(new Date(Long.parseLong(row[2])));
-		pet.setType(findPetTypeById(Integer.parseInt(row[3])));
+		Pet newTypet = new Pet();
+		newPet.setId(Integer.parseInt(row[0]));
+		newPet.setName(row[1]);
+		newPet.setBirthDate(new Date(Long.parseLong(row[2])));
+		newPet.setType(findPetTypeById(Integer.parseInt(row[3])));
 		// Also do something about the owner?????? Problem is a circular dependency
 
-		return pet;
+		return new pet;
 	}
+
+	private int getCSVRow() throws Exception {
+		CSVReader csvReader = new CSVReader(new FileReader("new-datastore/pets.csv"));
+		List<String[]> content = csvReader.readAll();
+		//Returning size + 1 to avoid id of 0
+		csvReader.close();
+		return content.size() + 1;
+	}
+
 }
