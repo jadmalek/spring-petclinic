@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 
 public class OwnerRepositoryCSV implements OwnerRepository{
 	//Owner format: id, firstname, lastname, address, city
@@ -126,21 +127,38 @@ public class OwnerRepositoryCSV implements OwnerRepository{
 		
 	}
 	
-	public void updateOwner(Owner correctOwner, Owner ownerToBeUpdated) {
+    public void updateOwner(Owner correctOwner, Owner ownerToBeUpdated) {
 		CSVReader reader = null;
+		//CSVWriter writer = null;
+		int rowToUpdate = 0;
+		StringBuilder newString = new StringBuilder();
 		try{
 			reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
-
-	        for(String[] actual : reader) {
-	        	//find the row of the owner to be updated, and update with new owner info
-	        	if (actual[0].equals(String.valueOf(correctOwner.getId())) ) {
-	        		actual[1] = ownerToBeUpdated.getFirstName();
-	        		actual[2] = ownerToBeUpdated.getLastName();
-	        		actual[3] = ownerToBeUpdated.getAddress();
-	        		actual[4] = ownerToBeUpdated.getCity();
-	        		actual[5] = ownerToBeUpdated.getTelephone();       		
+	        List<String[]> csvBody = reader.readAll();
+	        
+	        for(String[] actual : csvBody) {
+	        	//find the row of the owner to be updated, and' update with new owner info
+	        	if (actual[0].equals(Integer.toString(ownerToBeUpdated.getId()))) {
+	        		break;
 	        	}
+	        	rowToUpdate++;
 	        }
+	        
+	        csvBody.get(rowToUpdate)[0] = correctOwner.getId().toString();
+    		csvBody.get(rowToUpdate)[1] = correctOwner.getFirstName();
+    		csvBody.get(rowToUpdate)[2] = correctOwner.getLastName();
+    		csvBody.get(rowToUpdate)[3] = correctOwner.getAddress();
+    		csvBody.get(rowToUpdate)[4] = correctOwner.getCity();
+    		csvBody.get(rowToUpdate)[5] = correctOwner.getTelephone();
+    		
+	        reader.close();
+	        // Write to CSV file
+	        System.out.println("wtf " + csvBody.get(rowToUpdate)[0]);
+	        CSVWriter writer = new CSVWriter(new FileWriter("new-datastore/owners.csv"));
+	        writer.writeAll(csvBody, false);
+	        writer.flush();
+	        writer.close();
+	        
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
