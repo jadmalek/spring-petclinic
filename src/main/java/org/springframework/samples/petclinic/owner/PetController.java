@@ -188,7 +188,7 @@ class PetController {
         return inconsistencies;
     }
 
-	
+
     public void writeToMySqlDataBase(int petId, String name, java.sql.Date birthDate, int typeId, int ownerId) throws Exception {
     	Class.forName("com.mysql.jdbc.Driver").newInstance();
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
@@ -213,11 +213,11 @@ class PetController {
 		String filename = "new-datastore/pets.csv";
 		try {
 			int petId = getCSVRow();
-			
+
 			FileWriter fw = new FileWriter(filename, true);
 
 			java.sql.Date sqlBirthDate = new java.sql.Date(birthDate.getTime());
-			
+
 			writeToMySqlDataBase(petId, name, sqlBirthDate, typeId, ownerId);
 
 			// Append the new owner to the csv

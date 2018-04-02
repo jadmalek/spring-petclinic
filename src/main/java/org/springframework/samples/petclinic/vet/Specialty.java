@@ -273,12 +273,11 @@ public class Specialty extends NamedEntity implements Serializable {
 				PreparedStatement preparedSelect = conn.prepareStatement(query);
 				preparedSelect.setInt(1, specialtyId);
 
-				Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery(query);
+				ResultSet rs = preparedSelect.executeQuery();
 
 				while (rs.next()) {
-					stringBuilder.append(rs.getString(1) + ",");
-					stringBuilder.append(rs.getString(2) + ",");
+					stringBuilder.append(Integer.toString(rs.getInt("id")) + ",");
+					stringBuilder.append(rs.getString("name") + ",");
 				}
 		} catch (Exception e) {
 					e.printStackTrace();
@@ -295,7 +294,7 @@ public class Specialty extends NamedEntity implements Serializable {
 			CSVReader reader = new CSVReader(new FileReader("new-datastore/specialties.csv"));
 
 			for (String[] actual : reader) {
-				if (actual[0] == String.valueOf(specialtyId)) {
+				if (actual[0].equals(String.valueOf(specialtyId))) {
 					for (int i = 0; i < 2; i++) {
 						specialtyData += actual[i] + ",";
 					}

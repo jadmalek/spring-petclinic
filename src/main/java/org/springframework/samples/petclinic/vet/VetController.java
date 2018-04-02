@@ -201,12 +201,12 @@ class VetController {
           PreparedStatement preparedSelect = conn.prepareStatement(query);
           preparedSelect.setInt(1, vetId);
 
-          Statement stmt = conn.createStatement();
-          ResultSet rs = stmt.executeQuery(query);
+          ResultSet rs = preparedSelect.executeQuery();
 
           while (rs.next()) {
-            stringBuilder.append(rs.getString(1) + ",");
-            stringBuilder.append(rs.getString(2) + ",");
+            stringBuilder.append(rs.getInt("id") + ",");
+            stringBuilder.append(rs.getString("first_name") + ",");
+            stringBuilder.append(rs.getString("last_name") + ",");
           }
       } catch (Exception e) {
             e.printStackTrace();
@@ -223,8 +223,8 @@ class VetController {
         CSVReader reader = new CSVReader(new FileReader("new-datastore/vets.csv"));
 
         for (String[] actual : reader) {
-          if (actual[0] == String.valueOf(vetId)) {
-            for (int i = 0; i < 2; i++) {
+          if (actual[0].equals(String.valueOf(vetId))) {
+            for (int i = 0; i < 3; i++) {
               vetData += actual[i] + ",";
             }
           }
