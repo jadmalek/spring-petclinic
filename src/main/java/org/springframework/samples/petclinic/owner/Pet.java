@@ -114,4 +114,11 @@ public class Pet extends NamedEntity {
         visit.setPetId(this.getId());
     }
 
+    public boolean isEqualTo(Pet otherPet){
+      return(this.getName().equals(otherPet.getName()) &&
+          this.getBirthDate().equals(otherPet.getBirthDate()) &&
+          this.getType().equals(otherPet.getType()) &&
+          this.getOwner().equals(otherPet.getOwner()));
+    }
+
 }
