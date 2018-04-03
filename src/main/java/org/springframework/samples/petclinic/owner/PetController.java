@@ -56,24 +56,15 @@ class PetController {
 	private static final String VIEWS_PETS_CREATE_OR_UPDATE_FORM = "pets/createOrUpdatePetForm";
 	private final PetRepository pets;
 	private final OwnerRepository owners;
-	private final PetRepositoryCSV csvPets;
-	private final OwnerRepositoryCSV csvOwners;
+	private final PetRepositoryCSV csvPets = new PetRepositoryCSV();
+	private final OwnerRepositoryCSV csvOwners = new OwnerRepositoryCSV();
 
 	@Autowired
 	public PetController(PetRepository pets, OwnerRepository owners) {
 		this.pets = pets;
 		this.owners = owners;
-		this.csvPets = null;
-		this.csvOwners = null;
 	}
 	
-	@Autowired
-	public PetController(PetRepository pets, OwnerRepository owners, PetRepositoryCSV csvPets, OwnerRepositoryCSV csvOwners) {
-		this.pets = pets;
-		this.owners = owners;
-		this.csvPets = csvPets;
-		this.csvOwners = csvOwners;
-	}
 
 	@ModelAttribute("types")
 	public Collection<PetType> populatePetTypes() {

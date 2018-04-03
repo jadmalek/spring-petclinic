@@ -60,20 +60,13 @@ class OwnerController {
 
     private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm";
     private final OwnerRepository owners;
-    private final OwnerRepositoryCSV csvOwners;
+    private final OwnerRepositoryCSV csvOwners = new OwnerRepositoryCSV();
 
     @Autowired
     public OwnerController(OwnerRepository clinicService) {
         this.owners = clinicService;
-        csvOwners = null;
     }
     
-    @Autowired
-    public OwnerController(OwnerRepository clinicService, OwnerRepositoryCSV csvOwners) {
-        this.owners = clinicService;
-        this.csvOwners = csvOwners;
-    }
-
     @InitBinder
     public void setAllowedFields(WebDataBinder dataBinder) {
         dataBinder.setDisallowedFields("id");
