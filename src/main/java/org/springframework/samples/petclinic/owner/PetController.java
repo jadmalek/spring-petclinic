@@ -66,7 +66,7 @@ class PetController {
 		this.csvPets = null;
 		this.csvOwners = null;
 	}
-	
+
 	@Autowired
 	public PetController(PetRepository pets, OwnerRepository owners, PetRepositoryCSV csvPets, OwnerRepositoryCSV csvOwners) {
 		this.pets = pets;
@@ -159,7 +159,7 @@ class PetController {
 			System.out.println("Inconsistency found between Pets" + "\n" +
 									expected.toString() + " and " + actual.toString());
 			//TODO: update the row in the shadowread
-			//csvPets.updatePets(expected, actual);
+			csvPets.updatePet(expected, actual);
 		}
 		return new AsyncResult<Boolean>(consistent);
 	}
