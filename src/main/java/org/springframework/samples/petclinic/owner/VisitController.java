@@ -19,6 +19,9 @@ import com.opencsv.CSVReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.petclinic.visit.Visit;
 import org.springframework.samples.petclinic.visit.VisitRepository;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
@@ -38,6 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * @author Juergen Hoeller
@@ -106,7 +110,7 @@ class VisitController {
         try {
             FileWriter fw = new FileWriter(filename);
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "Jm0811<<");
             String query = "select * from visits";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
@@ -129,7 +133,9 @@ class VisitController {
         }
     }
 
-    public int checkConsistency() {
+    @Async
+    @Scheduled(fixedDelay = 5000)
+    public Future<Integer> checkConsistency() {
         int inconsistencies = 0;
 
         try {
@@ -145,7 +151,7 @@ class VisitController {
                 for(int i=0;i<4;i++) {
                     int columnIndex = i+1;
                     if(!actual[i].equals(rs.getString(columnIndex))) {
-                    	System.out.println("Consistency Violation!\n" + 
+                    	System.out.println("Visits Table Consistency Violation!\n" + 
                 				"\n\t expected = " + rs.getString(columnIndex)
                 				+ "\n\t actual = " + actual[i]);
                     	//fix inconsistency
@@ -158,12 +164,12 @@ class VisitController {
             if (inconsistencies == 0) 
             	System.out.println("No inconsistencies across former visits table dataset.");
             else
-            	System.out.println("Number of Inconsistencies: " + inconsistencies);
+            	System.out.println("Number of Inconsistencies for Visits Table: " + inconsistencies);
             
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
-        return inconsistencies;
+        return new AsyncResult<Integer>(inconsistencies);
     }
     
     public void writeToMySqlDataBase(int visitId, int petId, java.sql.Date visitDate, String description) throws Exception {

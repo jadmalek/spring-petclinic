@@ -25,12 +25,16 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import com.opencsv.CSVReader;
 import org.springframework.samples.petclinic.model.NamedEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.Scheduled;
 
 /**
  * Models a {@link Vet Vet's} specialty (for example, dentistry).
@@ -65,7 +69,9 @@ public class Specialty extends NamedEntity implements Serializable {
 		}
 	}
 
-    public int checkSpecialtiesConsistency() {
+	@Async
+    @Scheduled(fixedDelay = 5000)
+    public Future<Integer> checkSpecialtiesConsistency() {
         int inconsistencies = 0;
 
         try {
@@ -81,7 +87,7 @@ public class Specialty extends NamedEntity implements Serializable {
                 for(int i=0;i<2;i++) {
                     int columnIndex = i+1;
                     if(!actual[i].equals(rs.getString(columnIndex))) {
-                    	System.out.println("Consistency Violation!\n" +
+                    	System.out.println("Specialties Table Consistency Violation!\n" +
                 				"\n\t expected = " + rs.getString(columnIndex)
                 				+ "\n\t actual = " + actual[i]);
                     	//fix inconsistency
@@ -94,12 +100,12 @@ public class Specialty extends NamedEntity implements Serializable {
             if (inconsistencies == 0)
             	System.out.println("No inconsistencies across former specialties table dataset.");
             else
-            	System.out.println("Number of Inconsistencies: " + inconsistencies);
+            	System.out.println("Number of Inconsistencies for Specialties Table: " + inconsistencies);
 
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
-        return inconsistencies;
+        return new AsyncResult<Integer>(inconsistencies);
     }
 
 	//Implementation of method to move data from the vet_specialties table to a csv file
@@ -108,7 +114,7 @@ public class Specialty extends NamedEntity implements Serializable {
 		try {
 			FileWriter fw = new FileWriter(filename);
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "Jm0811<<");
 			String query = "select * from vet_specialties";
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(query);
@@ -127,7 +133,9 @@ public class Specialty extends NamedEntity implements Serializable {
 		}
 	}
 
-    public int checkVetSpecialtiesConsistency() {
+	@Async
+    @Scheduled(fixedDelay = 5000)
+    public Future<Integer> checkVetSpecialtiesConsistency() {
         int inconsistencies = 0;
 
         try {
@@ -143,7 +151,7 @@ public class Specialty extends NamedEntity implements Serializable {
                 for(int i=0;i<2;i++) {
                     int columnIndex = i+1;
                     if(!actual[i].equals(rs.getString(columnIndex))) {
-                    	System.out.println("Consistency Violation!\n" +
+                    	System.out.println("Vet_Specialties Table Consistency Violation!\n" +
                 				"\n\t expected = " + rs.getString(columnIndex)
                 				+ "\n\t actual = " + actual[i]);
                     	//fix inconsistency
@@ -156,12 +164,12 @@ public class Specialty extends NamedEntity implements Serializable {
             if (inconsistencies == 0)
             	System.out.println("No inconsistencies across former vet_specialties table dataset.");
             else
-            	System.out.println("Number of Inconsistencies: " + inconsistencies);
+            	System.out.println("Number of Inconsistencies for Vet_Specialties Table: " + inconsistencies);
 
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
-        return inconsistencies;
+        return new AsyncResult<Integer>(inconsistencies);
     }
 
     public void writeToMySqlDataBaseSpecialties(int specialtyId, String name) throws Exception {
@@ -244,7 +252,6 @@ public class Specialty extends NamedEntity implements Serializable {
 			e.printStackTrace();
 		}
 	}
-
 
     private int getCSVRowForSpecialty() throws Exception {
     	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/specialties.csv"));
