@@ -185,7 +185,7 @@ public class OwnerRepositoryCSV implements OwnerRepository{
 		return newOwner;
 	}
 	
-    private int getCSVRow() throws Exception {
+    public int getCSVRow() throws Exception {
     	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/owners.csv"));
     	List<String[]> content = csvReader.readAll();
     	//Returning size + 1 to avoid id of 0

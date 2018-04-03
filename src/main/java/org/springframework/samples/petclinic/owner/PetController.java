@@ -248,6 +248,7 @@ class PetController {
 	public void writeToFile(String name, Date birthDate, int typeId, int ownerId) {
 		String filename = "new-datastore/pets.csv";
 		try {
+			/*
 			int petId = getCSVRow();
 			Pet pet = new Pet();
 			pet.setId(petId);
@@ -255,12 +256,15 @@ class PetController {
 			pet.setBirthDate(birthDate);
 			pet.setOwner(this.owners.findById(ownerId));
 			pet.setType(this.pets.findPetTypes().get(typeId));
-			this.pets.save(pet);
+			this.pets.save(pet);*/
 
-
-			FileWriter fw = new FileWriter(filename, true);
+			int petId = getCSVRow();
 
 			java.sql.Date sqlBirthDate = new java.sql.Date(birthDate.getTime());
+			writeToMySqlDataBase(petId, name, sqlBirthDate, typeId, ownerId);
+			
+			FileWriter fw = new FileWriter(filename, true);
+
 
 			//writeToMySqlDataBase(petId, name, sqlBirthDate, typeId, ownerId);
 

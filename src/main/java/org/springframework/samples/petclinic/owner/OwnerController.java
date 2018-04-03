@@ -143,6 +143,12 @@ class OwnerController {
             owner.setId(ownerId);
             this.owners.save(owner);
             this.csvOwners.save(owner);
+            try {
+            	this.writeToMySqlDataBase(owner);
+            } catch (Exception e) {
+            	e.printStackTrace();
+            }
+
             checkConsistency();
             return "redirect:/owners/{ownerId}";
         }
@@ -178,7 +184,6 @@ class OwnerController {
     	if (!consistent) {
     		System.out.println("Inconsistency found between Owners" + "\n" +
     								expected.toString() + " and " + actual.toString());
-    		//TODO: update the row in the shadowread
     		csvOwners.updateOwner(expected, actual);
     	}
     	return new AsyncResult<Boolean>(consistent);
@@ -270,7 +275,7 @@ class OwnerController {
     	String filename ="new-datastore/owners.csv";
         try {
 
-            int ownerId = this.getCSVRow();
+            int ownerId = csvOwners.getCSVRow();
 
             Owner owner = new Owner();
             owner.setId(ownerId);
@@ -279,10 +284,10 @@ class OwnerController {
             owner.setAddress(address);
             owner.setCity(city);
             owner.setTelephone(telephone);
-            this.owners.save(owner);
-
+            //this.owners.save(owner);
+          
             FileWriter fw = new FileWriter(filename, true);
-           // writeToMySqlDataBase(ownerId, firstName, lastName, address, city, telephone);
+            writeToMySqlDataBase(owner);
 
             //Append the new owner to the csv
             fw.append(Integer.toString(ownerId));
@@ -356,5 +361,29 @@ class OwnerController {
         }
     	return ownerData;
     }
+    
+    public void writeToMySqlDataBase(Owner owner) throws Exception {
+
+    	Class.forName("com.mysql.jdbc.Driver").newInstance();
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+
+        // the mysql insert statement
+        String query = " INSERT into owners (id, first_name, last_name, address, city, telephone)"
+          + " Values (?, ?, ?, ?, ?, ?)";
+
+        // Create the MySql insert query
+        PreparedStatement preparedStmt = conn.prepareStatement(query);
+        preparedStmt.setInt(1, owner.getId());
+        preparedStmt.setString(2, owner.getFirstName());
+        preparedStmt.setString(3, owner.getLastName());
+        preparedStmt.setString(4, owner.getAddress());
+        preparedStmt.setString(5, owner.getCity());
+        preparedStmt.setString(6, owner.getTelephone());
+
+        // execute the preparedstatement
+        preparedStmt.execute();
+    }
+    
+    
 
 }

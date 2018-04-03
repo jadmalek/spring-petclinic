@@ -195,7 +195,7 @@ public class PetRepositoryCSV implements PetRepository{
 		}	
 	}
 	
-	private int getCSVRow() throws Exception {
+	public int getCSVRow() throws Exception {
 		CSVReader csvReader = new CSVReader(new FileReader("new-datastore/pets.csv"));
 		List<String[]> content = csvReader.readAll();
 		//Returning size + 1 to avoid id of 0

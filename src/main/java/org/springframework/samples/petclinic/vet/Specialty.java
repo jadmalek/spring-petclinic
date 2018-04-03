@@ -114,7 +114,7 @@ public class Specialty extends NamedEntity implements Serializable {
 		try {
 			FileWriter fw = new FileWriter(filename);
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "Jm0811<<");
+			Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
 			String query = "select * from vet_specialties";
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(query);

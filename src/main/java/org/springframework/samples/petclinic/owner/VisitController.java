@@ -110,7 +110,7 @@ class VisitController {
         try {
             FileWriter fw = new FileWriter(filename);
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "Jm0811<<");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
             String query = "select * from visits";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
@@ -198,14 +198,14 @@ class VisitController {
         	visit.setDate(visitDate);
         	visit.setPetId(petId);
         	visit.setDescription(description);
-        	this.visits.save(visit);
+        	//this.visits.save(visit);
         	
             FileWriter fw = new FileWriter(filename, true);
 
             //Convert the java.util.Date to java.sql.Date
             java.sql.Date sqlDate = new java.sql.Date(visitDate.getTime());
 
-            //writeToMySqlDataBase(visitId, petId, sqlDate, description);
+            writeToMySqlDataBase(visitId, petId, sqlDate, description);
 
             //Append the new visit to the csv
             fw.append(Integer.toString(visitId));
@@ -254,7 +254,8 @@ class VisitController {
     	} catch (Exception e) {
             e.printStackTrace();
         }
-
+    	
+    	System.out.println("visit readfrommysql " + stringBuilder.toString());
         String visitData = stringBuilder.toString();
     	return visitData;
     }
@@ -277,7 +278,6 @@ class VisitController {
     	} catch (Exception e) {
             e.printStackTrace();
         }
-
     	return visitData;
     }
 
