@@ -46,7 +46,7 @@ public class PetType extends NamedEntity {
         try {
             FileWriter fw = new FileWriter(filename);
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3307/petclinic", "root", "root");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
             String query = "select * from types";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
@@ -69,7 +69,7 @@ public class PetType extends NamedEntity {
     	String column = "";
     	
     	try {
-    		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3307?autoReconnect=true&useSSL=false/petclinic?autoReconnect=true&useSSL=false", "root", "root");
+    		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306?autoReconnect=true&useSSL=false/petclinic?autoReconnect=true&useSSL=false", "root", "root");
         	String query = "select * from types";
         	Statement stmt = conn.createStatement();
     		ResultSet rs = stmt.executeQuery(query);
@@ -94,13 +94,13 @@ public class PetType extends NamedEntity {
     		String sqlColumn2;
 
     		//for(int i=0;i<2;i++) {
-	    		//sqlColumn = appendSQLColumn(1);
-	    		sqlColumn = "512634";//temp hardcode
+	    		sqlColumn = appendSQLColumn(1);
+	    		//sqlColumn = "512634";//temp hardcode
 				sqlColumn = hash.computeHash(sqlColumn);
 				fw.append(sqlColumn);
 				fw.append(',');
-				//sqlColumn2 = appendSQLColumn(2);
-				sqlColumn2 = "birdcatdoghamsterlizardsnake";//temp hardcode
+				sqlColumn2 = appendSQLColumn(2);
+				//sqlColumn2 = "birdcatdoghamsterlizardsnake";//temp hardcode
 				sqlColumn2 = hash.computeHash(sqlColumn);
 				fw.append(sqlColumn2);
 				fw.append('\n');
@@ -160,7 +160,7 @@ public class PetType extends NamedEntity {
         try {
             CSVReader reader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
 
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3307/petclinic?autoReconnect=true&useSSL=false", "root", "root");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic?autoReconnect=true&useSSL=false", "root", "root");
             String query = "select * from types";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
