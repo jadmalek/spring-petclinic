@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 
 //Pet csv format: Id, Name, Birth date, typeId, OwnerId
 
@@ -169,31 +170,40 @@ public class PetRepositoryCSV implements PetRepository{
 
 		return newPet;
 	}
-
 	public void updatePet(Pet correctPet, Pet petToBeUpdated) {
 		CSVReader reader = null;
+		int rowToUpdate = 0;
 		try{
 			reader = new CSVReader(new FileReader("new-datastore/pets.csv"));
-
-	        for(String[] actual : reader) {
-	        	//find the row of the owner to be updated, and update with new owner info
-	        	if (actual[0].equals(String.valueOf(correctPet.getId())) ) {
-	        		actual[1] = petToBeUpdated.getName();
-	        		actual[2] = petToBeUpdated.getBirthDate().toString();
-	        		actual[3] = petToBeUpdated.getOwner().toString();
-	        		actual[4] = petToBeUpdated.getType().toString();
+	        List<String[]> csvBody = reader.readAll();
+	        
+	        for(String[] actual : csvBody) {
+	        	//find the row of the owner to be updated, and' update with new owner info
+	        	if (actual[0].equals(Integer.toString(petToBeUpdated.getId()))) {
+	        		break;
 	        	}
+	        	rowToUpdate++;
 	        }
+	        
+	        csvBody.get(rowToUpdate)[0] = correctPet.getId().toString();
+    		csvBody.get(rowToUpdate)[1] = correctPet.getName();
+    		csvBody.get(rowToUpdate)[2] = correctPet.getBirthDate().toString();
+    		csvBody.get(rowToUpdate)[3] = correctPet.getOwner().getId().toString();
+    		csvBody.get(rowToUpdate)[4] = correctPet.getType().getId().toString();
+    		
+	        reader.close();
+	        // Write to CSV file
+	        CSVWriter writer = new CSVWriter(new FileWriter("new-datastore/pets.csv"));
+	        writer.writeAll(csvBody, false);
+	        writer.flush();
+	        writer.close();
+	        
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				reader.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}	
+		}
+		
 	}
+	
 	
 	public int getCSVRow() throws Exception {
 		CSVReader csvReader = new CSVReader(new FileReader("new-datastore/pets.csv"));

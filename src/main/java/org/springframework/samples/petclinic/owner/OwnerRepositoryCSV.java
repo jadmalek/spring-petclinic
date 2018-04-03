@@ -129,9 +129,7 @@ public class OwnerRepositoryCSV implements OwnerRepository{
 	
     public void updateOwner(Owner correctOwner, Owner ownerToBeUpdated) {
 		CSVReader reader = null;
-		//CSVWriter writer = null;
 		int rowToUpdate = 0;
-		StringBuilder newString = new StringBuilder();
 		try{
 			reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
 	        List<String[]> csvBody = reader.readAll();
@@ -153,7 +151,6 @@ public class OwnerRepositoryCSV implements OwnerRepository{
     		
 	        reader.close();
 	        // Write to CSV file
-	        System.out.println("wtf " + csvBody.get(rowToUpdate)[0]);
 	        CSVWriter writer = new CSVWriter(new FileWriter("new-datastore/owners.csv"));
 	        writer.writeAll(csvBody, false);
 	        writer.flush();
@@ -161,14 +158,7 @@ public class OwnerRepositoryCSV implements OwnerRepository{
 	        
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				reader.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
-		
 	}
 	
 	
