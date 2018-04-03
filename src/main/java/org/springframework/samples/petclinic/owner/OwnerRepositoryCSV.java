@@ -28,7 +28,7 @@ public class OwnerRepositoryCSV implements OwnerRepository{
 			ownerReader = new CSVReader(new FileReader(ownerFile));
 			String[] row = ownerReader.readNext();
 			while(row != null) {
-				if(row.length > 0 && row[2].equals(lastName)) {
+				if(row.length > 0 && (row[2].equals(lastName) || lastName=="")) {
 					//Found a matching last name
 					Owner newOwner = constructOwner(row);
 					result.add(newOwner);
