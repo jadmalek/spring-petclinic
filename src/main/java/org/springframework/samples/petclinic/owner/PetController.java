@@ -56,13 +56,11 @@ class PetController {
 	private static final String VIEWS_PETS_CREATE_OR_UPDATE_FORM = "pets/createOrUpdatePetForm";
 	private final PetRepository pets;
 	private final OwnerRepository owners;
-	private final PetRepositoryCSV csvPets = new PetRepositoryCSV();
-	private final OwnerRepositoryCSV csvOwners = new OwnerRepositoryCSV();
 
 	@Autowired
 	public PetController(PetRepository pets, OwnerRepository owners) {
-		this.pets = pets;
-		this.owners = owners;
+		this.pets = new PetRepositoryCSV();
+		this.owners = new OwnerRepositoryCSV();
 	}
 
 	@ModelAttribute("types")
@@ -104,8 +102,6 @@ class PetController {
 			return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 		} else {
 			this.pets.save(pet);
-			this.csvPets.save(pet);
-			checkConsistency();
 			return "redirect:/owners/{ownerId}";
 		}
 	}
@@ -113,8 +109,6 @@ class PetController {
 	@GetMapping("/pets/{petId}/edit")
 	public String initUpdateForm(@PathVariable("petId") int petId, ModelMap model) {
 		Pet pet = this.pets.findById(petId);
-		Pet pet2 = csvPets.findById(petId);
-		shadowReadConsistencyCheck(pet, pet2);
 		model.put("pet", pet);
 		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 	}
@@ -128,8 +122,6 @@ class PetController {
 		} else {
 			owner.addPet(pet);
 			this.pets.save(pet);
-			this.csvPets.save(pet);
-			checkConsistency();
 			return "redirect:/owners/{ownerId}";
 		}
 	}
@@ -148,8 +140,6 @@ class PetController {
 		if (!consistent) {
 			System.out.println("Inconsistency found between Pets" + "\n" +
 									expected.toString() + " and " + actual.toString());
-			//TODO: update the row in the shadowread
-			csvPets.updatePet(expected, actual);
 		}
 		return new AsyncResult<Boolean>(consistent);
 	}

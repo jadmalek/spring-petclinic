@@ -60,11 +60,10 @@ class OwnerController {
 
     private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm";
     private final OwnerRepository owners;
-    private final OwnerRepositoryCSV csvOwners = new OwnerRepositoryCSV();
 
     @Autowired
     public OwnerController(OwnerRepository clinicService) {
-        this.owners = clinicService;
+        this.owners = new OwnerRepositoryCSV();
     }
     
     @InitBinder
@@ -86,7 +85,6 @@ class OwnerController {
             return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
         } else {
             this.owners.save(owner);
-            this.csvOwners.save(owner);
 
             checkConsistency();
             return "redirect:/owners/" + owner.getId();
@@ -109,8 +107,6 @@ class OwnerController {
 
         // find owners by last name
         Collection<Owner> results = this.owners.findByLastName(owner.getLastName());
-        Collection<Owner> csvResults = this.csvOwners.findByLastName(owner.getLastName());
-        shadowReadConsistencyCheck(results, csvResults);
         if (results.isEmpty()) {
             // no owners found
             result.rejectValue("lastName", "notFound", "not found");
@@ -129,8 +125,6 @@ class OwnerController {
     @GetMapping("/owners/{ownerId}/edit")
     public String initUpdateOwnerForm(@PathVariable("ownerId") int ownerId, Model model) {
         Owner owner = this.owners.findById(ownerId);
-        Owner owner2 = csvOwners.findById(ownerId);
-        shadowReadConsistencyCheck(owner, owner2);
         model.addAttribute(owner);
         return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
     }
@@ -142,7 +136,6 @@ class OwnerController {
         } else {
             owner.setId(ownerId);
             this.owners.save(owner);
-            this.csvOwners.save(owner);
             try {
             	this.writeToMySqlDataBase(owner);
             } catch (Exception e) {
@@ -165,8 +158,6 @@ class OwnerController {
         ModelAndView mav = new ModelAndView("owners/ownerDetails");
         Owner expectedOwner = this.owners.findById(ownerId);
         mav.addObject(expectedOwner);
-        Owner actualOwner = this.csvOwners.findById(ownerId);
-        shadowReadConsistencyCheck(expectedOwner, actualOwner);
         return mav;
     }
 
@@ -184,7 +175,6 @@ class OwnerController {
     	if (!consistent) {
     		System.out.println("Inconsistency found between Owners" + "\n" +
     								expected.toString() + " and " + actual.toString());
-    		csvOwners.updateOwner(expected, actual);
     	}
     	return new AsyncResult<Boolean>(consistent);
     }
@@ -275,7 +265,7 @@ class OwnerController {
     	String filename ="new-datastore/owners.csv";
         try {
 
-            int ownerId = csvOwners.getCSVRow();
+            int ownerId = ((OwnerRepositoryCSV) this.owners).getCSVRow();
 
             Owner owner = new Owner();
             owner.setId(ownerId);
