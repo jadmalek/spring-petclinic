@@ -65,6 +65,7 @@ class OwnerController {
     @Autowired
     public OwnerController(OwnerRepository clinicService) {
         this.owners = clinicService;
+        forklift();
     }
     
     @InitBinder

@@ -63,6 +63,7 @@ class PetController {
 	public PetController(PetRepository pets, OwnerRepository owners) {
 		this.pets = pets;
 		this.owners = owners;
+		forklift();
 	}
 
 	@ModelAttribute("types")
