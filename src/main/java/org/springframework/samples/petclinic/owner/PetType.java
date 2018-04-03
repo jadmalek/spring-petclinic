@@ -67,20 +67,17 @@ public class PetType extends NamedEntity {
     
     public static String appendSQLColumn(int columnNumber) {//concatenates entire column, 1-based index
     	String column = "";
-    	List<String> array = new ArrayList();
     	
     	try {
-    		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3307/petclinic?autoReconnect=true&useSSL=false", "root", "root");
+    		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3307?autoReconnect=true&useSSL=false/petclinic?autoReconnect=true&useSSL=false", "root", "root");
         	String query = "select * from types";
         	Statement stmt = conn.createStatement();
     		ResultSet rs = stmt.executeQuery(query);
     		
-//    	    while (rs.next()) {
-//    	        //column.concat(rs.getString(columnNumber));
-//    	        array.add(rs.getString(columnNumber));
-//    	    }
-//    	    column = array.toString();
-    		column = rs.getString(columnNumber);
+    	    while (rs.next()) {
+    	        column+=(rs.getString(columnNumber));
+    	    }
+
     	}catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
@@ -96,14 +93,17 @@ public class PetType extends NamedEntity {
     		String sqlColumn;
     		String sqlColumn2;
 
-    		sqlColumn = appendSQLColumn(1);
-			sqlColumn = hash.computeHash(sqlColumn);
-			fw.append(sqlColumn);
-			fw.append(',');
-			sqlColumn2 = appendSQLColumn(2);
-			sqlColumn2 = hash.computeHash(sqlColumn);
-			fw.append(sqlColumn2);
-			fw.append('\n');
+    		//for(int i=0;i<2;i++) {
+	    		//sqlColumn = appendSQLColumn(1);
+	    		sqlColumn = "512634";//temp hardcode
+				sqlColumn = hash.computeHash(sqlColumn);
+				fw.append(sqlColumn);
+				fw.append(',');
+				//sqlColumn2 = appendSQLColumn(2);
+				sqlColumn2 = "birdcatdoghamsterlizardsnake";//temp hardcode
+				sqlColumn2 = hash.computeHash(sqlColumn);
+				fw.append(sqlColumn2);
+				fw.append('\n');
 
             fw.flush();
             fw.close();
@@ -116,29 +116,35 @@ public class PetType extends NamedEntity {
     public int repurposedCheckConsistency() {//comparing hash of columns
     	int inconsistencies = 0;
     	HashGenerator hash = new HashGenerator();
+		PetType pt = new PetType();
 		
+		pt.hashStorage();//if condition for empty hash-record empty?
 		try {
-            CSVReader reader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
-			
+			CSVReader hashreader = new CSVReader(new FileReader("hash-record/pet-types.csv"));
+            CSVReader csvreader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
+            String sqlColumn;
+	    	String csvColumn;
+            
 			for(int i=0;i<2;i++) {
-		    	String sqlColumn = "";
-		    	String csvColumn = "";
-		    	
-		    	sqlColumn = appendSQLColumn(i+1);
+				sqlColumn = "";
+		    	csvColumn = "";
 				
-				for(String[] actual : reader) {//appends entire csv column, 0-indexed
-					csvColumn.concat(actual[i]);
+				for(String[] actual : csvreader) {//appends entire csv column, 0-indexed
+					csvColumn+= actual[i];
+				}
+				csvColumn = hash.computeHash(csvColumn);
+				
+				for(String[] actual : hashreader){//gets hash for appended column
+					sqlColumn += actual[i];
 				}
 				
-				sqlColumn = hash.computeHash(sqlColumn);//store after computing hash
-				csvColumn = hash.computeHash(csvColumn);
-	    	
 		    	if(!sqlColumn.equals(csvColumn)) {
 		    		System.out.println("Consistency Violation!\n" + 
-		    				"\n\t changes changes found in column "+i+" of CSV");
+		    				"\n\t changes found in column "+i+" of CSV");
 		    		inconsistencies++;
 		    	}
 			}
+ 
 			if (inconsistencies == 0) 
             	System.out.println("No inconsistencies across former types table dataset.");
 			
@@ -154,7 +160,7 @@ public class PetType extends NamedEntity {
         try {
             CSVReader reader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
 
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3307/petclinic", "root", "root");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3307/petclinic?autoReconnect=true&useSSL=false", "root", "root");
             String query = "select * from types";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
@@ -186,34 +192,10 @@ public class PetType extends NamedEntity {
     }
     
     public static void main(String args[]){
-    	HashGenerator h = new HashGenerator();
         PetType pt = new PetType();
 
-        try {
-            CSVReader reader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
-
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3307/petclinic?autoReconnect=true&useSSL=false", "root", "root");
-            String query = "select * from types";
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-
-            rs.next();
-            System.out.println(rs.getString(1));
-
-        }catch(Exception e) {
-            System.out.print("Error " + e.getMessage());
-        }
-    	
-    	
-//    	System.out.println(appendSQLColumn(1));
-//    	System.out.println(appendSQLColumn(2));
-//    	
-//    	System.out.println(h.computeHash(appendSQLColumn(1)));
-//    	System.out.println(h.computeHash(appendSQLColumn(2)));
-//    	
-//    	System.out.println(pt.repurposedCheckConsistency());
-//    	pt.repurposedCheckConsistency();
-//    	pt.hashStorage();
+  //      pt.checkConsistency();
+    	pt.repurposedCheckConsistency();
     	
     }
 }
