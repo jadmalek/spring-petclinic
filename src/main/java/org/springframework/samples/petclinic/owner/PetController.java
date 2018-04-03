@@ -64,7 +64,6 @@ class PetController {
 		this.pets = pets;
 		this.owners = owners;
 	}
-	
 
 	@ModelAttribute("types")
 	public Collection<PetType> populatePetTypes() {
@@ -150,7 +149,7 @@ class PetController {
 			System.out.println("Inconsistency found between Pets" + "\n" +
 									expected.toString() + " and " + actual.toString());
 			//TODO: update the row in the shadowread
-			//csvPets.updatePets(expected, actual);
+			csvPets.updatePet(expected, actual);
 		}
 		return new AsyncResult<Boolean>(consistent);
 	}
