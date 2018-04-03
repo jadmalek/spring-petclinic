@@ -102,7 +102,7 @@ public class OwnerRepositoryCSV implements OwnerRepository{
     	String filename ="new-datastore/owners.csv";
         try {
             FileWriter fw = new FileWriter(filename, true);
-
+            	
             //Append the new owner to the csv
             fw.append(Integer.toString(owner.getId()));
             fw.append(',');
@@ -112,7 +112,7 @@ public class OwnerRepositoryCSV implements OwnerRepository{
             fw.append(',');
             fw.append(owner.getAddress());
             fw.append(',');
-            fw.append(owner.getAddress());
+            fw.append(owner.getCity());
             fw.append(',');
             fw.append(owner.getTelephone());
             fw.append(',');
@@ -179,6 +179,7 @@ public class OwnerRepositoryCSV implements OwnerRepository{
 		newOwner.setLastName(row[2]);
 		newOwner.setAddress(row[3]);
 		newOwner.setCity(row[4]);
+		newOwner.setTelephone(row[5]);
 		// also get the pets
 		
 		return newOwner;
