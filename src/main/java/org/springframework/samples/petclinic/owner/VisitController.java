@@ -19,6 +19,9 @@ import com.opencsv.CSVReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.petclinic.visit.Visit;
 import org.springframework.samples.petclinic.visit.VisitRepository;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
@@ -30,9 +33,15 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * @author Juergen Hoeller
@@ -124,7 +133,9 @@ class VisitController {
         }
     }
 
-    public int checkConsistency() {
+    @Async
+    @Scheduled(fixedDelay = 5000)
+    public Future<Integer> checkConsistency() {
         int inconsistencies = 0;
 
         try {
@@ -140,7 +151,7 @@ class VisitController {
                 for(int i=0;i<4;i++) {
                     int columnIndex = i+1;
                     if(!actual[i].equals(rs.getString(columnIndex))) {
-                    	System.out.println("Consistency Violation!\n" + 
+                    	System.out.println("Visits Table Consistency Violation!\n" + 
                 				"\n\t expected = " + rs.getString(columnIndex)
                 				+ "\n\t actual = " + actual[i]);
                     	//fix inconsistency
@@ -153,12 +164,121 @@ class VisitController {
             if (inconsistencies == 0) 
             	System.out.println("No inconsistencies across former visits table dataset.");
             else
-            	System.out.println("Number of Inconsistencies: " + inconsistencies);
+            	System.out.println("Number of Inconsistencies for Visits Table: " + inconsistencies);
             
         }catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
-        return inconsistencies;
+        return new AsyncResult<Integer>(inconsistencies);
+    }
+    
+    public void writeToMySqlDataBase(int visitId, int petId, java.sql.Date visitDate, String description) throws Exception {
+
+    	Class.forName("com.mysql.jdbc.Driver").newInstance();
+        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+
+        String query = " INSERT into visits (id, pet_id, visit_date, description)"
+          + " Values (?, ?, ?, ?)";
+
+        PreparedStatement preparedStmt = conn.prepareStatement(query);
+        preparedStmt.setInt(1,  visitId);
+        preparedStmt.setInt(2, petId);
+        preparedStmt.setDate(3, visitDate);
+        preparedStmt.setString(4, description);
+
+        preparedStmt.execute();
+    }
+
+    public void writeToFile(int petId, Date visitDate, String description) {
+    	String filename ="new-datastore/visits.csv";
+        try {
+        	int visitId = getCSVRow();
+        	Visit visit = new Visit();
+        	visit.setId(visitId);
+        	visit.setDate(visitDate);
+        	visit.setPetId(petId);
+        	visit.setDescription(description);
+        	//this.visits.save(visit);
+        	
+            FileWriter fw = new FileWriter(filename, true);
+
+            //Convert the java.util.Date to java.sql.Date
+            java.sql.Date sqlDate = new java.sql.Date(visitDate.getTime());
+
+            writeToMySqlDataBase(visitId, petId, sqlDate, description);
+
+            //Append the new visit to the csv
+            fw.append(Integer.toString(visitId));
+            fw.append(',');
+            fw.append(Integer.toString(petId));
+            fw.append(',');
+            fw.append(sqlDate.toString());
+            fw.append(',');
+            fw.append(description);
+            fw.append('\n');
+            fw.flush();
+            fw.close();
+
+            System.out.println("Shadow write for visits complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private int getCSVRow() throws Exception {
+    	CSVReader csvReader = new CSVReader(new FileReader("new-datastore/visits.csv"));
+    	List<String[]> content = csvReader.readAll();
+    	//Returning size + 1 to avoid id of 0
+    	csvReader.close();
+    	return content.size() + 1;
+    }
+    
+    public String readFromMySqlDataBase(int visitId) {
+
+    	StringBuilder stringBuilder = new StringBuilder();
+    	try {
+	        Class.forName("com.mysql.jdbc.Driver").newInstance();
+	        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
+	        String query = "SELECT * FROM visits WHERE id=?";
+	        PreparedStatement preparedSelect = conn.prepareStatement(query);
+	        preparedSelect.setInt(1, visitId);
+
+	        ResultSet rs = preparedSelect.executeQuery();
+
+	        while (rs.next()) {
+	        	stringBuilder.append(Integer.toString(rs.getInt("id")) + ",");
+	        	stringBuilder.append(Integer.toString(rs.getInt("pet_id")) + ",");
+	        	stringBuilder.append(rs.getDate("visit_date") + ",");
+	        	stringBuilder.append(rs.getString("description") + ",");
+	        }
+    	} catch (Exception e) {
+            e.printStackTrace();
+        }
+    	
+    	System.out.println("visit readfrommysql " + stringBuilder.toString());
+        String visitData = stringBuilder.toString();
+    	return visitData;
+    }
+
+    public String readFromNewDataStore(int visitId) {
+    	String visitData = "";
+
+    	try {
+    		CSVReader reader = new CSVReader(new FileReader("new-datastore/visits.csv"));
+
+    		for (String[] actual : reader) {
+    			if (actual[0].equals(String.valueOf(visitId))) {
+    				for (int i = 0; i < 4; i++) {
+    					visitData += actual[i] + ",";
+    				}
+    			}
+    		}
+    		reader.close();
+
+    	} catch (Exception e) {
+            e.printStackTrace();
+        }
+    	return visitData;
     }
 
 }
