@@ -15,6 +15,8 @@ import java.util.List;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
+import hashGenerator.HashGenerator;
+
 //Pet csv format: Id, Name, Birth date, typeId, OwnerId
 
 public class PetRepositoryCSV implements PetRepository{
@@ -116,14 +118,33 @@ public class PetRepositoryCSV implements PetRepository{
 						fw.append('\n');
 						fw.flush();
 						fw.close();
-
+						
+						storeHashRecord();
 						System.out.println("Shadow write for pet complete.");
 				} catch (Exception e) {
 						e.printStackTrace();
 				}
 
-	}
+	}    
+	
+    public void storeHashRecord() {//stores/update hashvalue
+    	String filename ="hash-record/pets.csv";
+        try {
+            FileWriter fw = new FileWriter(filename);
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            HashGenerator hash = new HashGenerator();
+    		String hashContent = hash.computeHash(PetController.appendHashedRows());//second hash
+    			fw.append(hashContent);
+				fw.append('\n');
 
+            fw.flush();
+            fw.close();
+            System.out.println("CSV file for the pets table has been created successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
 	private PetType findPetTypeById(Integer id) {
 		CSVReader petTypeReader = null;
 

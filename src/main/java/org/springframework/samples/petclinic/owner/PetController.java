@@ -16,6 +16,9 @@
 package org.springframework.samples.petclinic.owner;
 
 import com.opencsv.CSVReader;
+
+import hashGenerator.HashGenerator;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -39,6 +42,8 @@ import java.sql.PreparedStatement;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -186,6 +191,27 @@ class PetController {
         }
     }
 
+    public static String appendHashedRows() {//collects rows, hashes them, appends them and returns
+    	String hashContent = "";
+    	
+    	try {
+    		CSVReader reader = new CSVReader(new FileReader("new-datastore/pets.csv"));
+    		HashGenerator hash = new HashGenerator();
+
+    		
+    		for(String[] actual : reader) {
+    			ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(actual));
+    			String row = arrayList.toString();
+    			hashContent += hash.computeHash(row);
+        		
+         	} 
+    		reader.close();
+    	}catch(Exception e) {
+            System.out.print("Error " + e.getMessage());
+        }
+        return hashContent;
+    }
+    
     @Async
     @Scheduled(fixedDelay = 5000)
     public Future<Integer> checkConsistency() {

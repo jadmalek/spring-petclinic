@@ -1,4 +1,4 @@
-package HashGenerator;
+package hashGenerator;
 
 import java.security.MessageDigest;
 

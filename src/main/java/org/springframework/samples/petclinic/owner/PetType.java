@@ -22,6 +22,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -30,7 +32,7 @@ import javax.persistence.Table;
 
 import com.opencsv.CSVReader;
 
-import HashGenerator.HashGenerator;
+import hashGenerator.HashGenerator;
 
 import org.springframework.samples.petclinic.model.NamedEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -69,44 +71,37 @@ public class PetType extends NamedEntity {
         }
     }
     
-    public static String appendSQLColumn(int columnNumber) {//concatenates entire column, 1-based index
-    	String column = "";
+    public static String appendHashedRows() {//collects rows, hashes them, appends them and returns
+    	String hashContent = "";
     	
     	try {
-    		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306?autoReconnect=true&useSSL=false/petclinic?autoReconnect=true&useSSL=false", "root", "root");
-        	String query = "select * from types";
-        	Statement stmt = conn.createStatement();
-    		ResultSet rs = stmt.executeQuery(query);
+    		CSVReader reader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
+    		HashGenerator hash = new HashGenerator();
+
     		
-    	    while (rs.next()) {
-    	        column+=(rs.getString(columnNumber));
-    	    }
+    		for(String[] actual : reader) {
+    			ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(actual));
+    			String row = arrayList.toString();
+    			hashContent += hash.computeHash(row);
+        		
+         	} 
+    		reader.close();
 
     	}catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
-        return column;
+        return hashContent;
     }
     
-    public void hashStorage() {//create csv of hashes
+    
+    public void storeHashRecord() {//stores/update hashvalue
     	String filename ="hash-record/pet-types.csv";
         try {
             FileWriter fw = new FileWriter(filename);
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             HashGenerator hash = new HashGenerator();
-    		String sqlColumn;
-    		String sqlColumn2;
-
-    		//for(int i=0;i<2;i++) {
-	    		sqlColumn = appendSQLColumn(1);
-	    		//sqlColumn = "512634";//temp hardcode
-				sqlColumn = hash.computeHash(sqlColumn);
-				fw.append(sqlColumn);
-				fw.append(',');
-				sqlColumn2 = appendSQLColumn(2);
-				//sqlColumn2 = "birdcatdoghamsterlizardsnake";//temp hardcode
-				sqlColumn2 = hash.computeHash(sqlColumn);
-				fw.append(sqlColumn2);
+    		String hashContent = hash.computeHash(appendHashedRows());//second hash
+    			fw.append(hashContent);
 				fw.append('\n');
 
             fw.flush();
@@ -120,35 +115,25 @@ public class PetType extends NamedEntity {
     public int repurposedCheckConsistency() {//comparing hash of columns
     	int inconsistencies = 0;
     	HashGenerator hash = new HashGenerator();
-		PetType pt = new PetType();
 		
-		pt.hashStorage();//if condition for empty hash-record empty?
 		try {
-			CSVReader hashreader = new CSVReader(new FileReader("hash-record/pet-types.csv"));
-            CSVReader csvreader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
-            String sqlColumn;
-	    	String csvColumn;
+			CSVReader hashReader = new CSVReader(new FileReader("hash-record/pet-types.csv"));
+	    	String csvCurrent;
+	    	String hashRecord = "";
             
-			for(int i=0;i<2;i++) {
-				sqlColumn = "";
-		    	csvColumn = "";
-				
-				for(String[] actual : csvreader) {//appends entire csv column, 0-indexed
-					csvColumn+= actual[i];
-				}
-				csvColumn = hash.computeHash(csvColumn);
-				
-				for(String[] actual : hashreader){//gets hash for appended column
-					sqlColumn += actual[i];
-				}
-				
-		    	if(!sqlColumn.equals(csvColumn)) {
-		    		System.out.println("Consistency Violation!\n" + 
-		    				"\n\t changes found in column "+i+" of CSV");
-		    		inconsistencies++;
-		    	}
+			csvCurrent = hash.computeHash(appendHashedRows());
+			
+			for(String[] actual : hashReader) {
+				hashRecord = actual[0];
 			}
- 
+				
+			if(!hashRecord.equals(csvCurrent)) {
+				System.out.println("Consistency Violation!\n" + 
+						"\n\t changes found in pet-types CSV");
+		    	inconsistencies++;
+		    }
+			
+			hashReader.close();
 			if (inconsistencies == 0) 
             	System.out.println("No inconsistencies across former types table dataset.");
 			
@@ -290,12 +275,5 @@ public class PetType extends NamedEntity {
         }
     	return petType;
     }
-    
-    public static void main(String args[]){
-        PetType pt = new PetType();
 
-  //      pt.checkConsistency();
-    	pt.repurposedCheckConsistency();
-    	
-    }
 }

@@ -3,16 +3,14 @@ package org.springframework.samples.petclinic.owner;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+
+import hashGenerator.HashGenerator;
 
 public class OwnerRepositoryCSV implements OwnerRepository{
 	//Owner format: id, firstname, lastname, address, city
@@ -97,6 +95,25 @@ public class OwnerRepositoryCSV implements OwnerRepository{
 		return owner;
 	}
 	
+    
+    public void storeHashRecord() {//stores/update hashrecord
+    	String filename ="hash-record/owners.csv";
+        try {
+            FileWriter fw = new FileWriter(filename);
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            HashGenerator hash = new HashGenerator();
+    		String hashContent = hash.computeHash(OwnerController.appendHashedRows());//second hash
+    			fw.append(hashContent);
+				fw.append('\n');
+
+            fw.flush();
+            fw.close();
+            System.out.println("CSV file for the owners table has been created successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+	
 	@Override
 	public void save(Owner owner) {
     	String filename ="new-datastore/owners.csv";
@@ -120,6 +137,7 @@ public class OwnerRepositoryCSV implements OwnerRepository{
             fw.flush();
             fw.close();
 
+            storeHashRecord();
             System.out.println("Shadow write for owner complete.");
         } catch (Exception e) {
             e.printStackTrace();
