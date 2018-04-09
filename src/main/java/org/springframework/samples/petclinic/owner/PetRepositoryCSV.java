@@ -8,10 +8,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
@@ -204,9 +207,16 @@ public class PetRepositoryCSV implements PetRepository{
 
 	private Pet constructPet(String[] row) {
 		Pet newPet = new Pet();
+		java.util.Date petBirthDate = null;
+		try {
+			petBirthDate = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(row[2]);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 		newPet.setId(Integer.parseInt(row[0]));
 		newPet.setName(row[1]);
-		newPet.setBirthDate(new Date(Long.parseLong(row[2])));
+		newPet.setBirthDate(petBirthDate);
+		//newPet.setBirthDate(new Date(Long.parseLong(row[2])));
 		newPet.setType(findPetTypeById(Integer.parseInt(row[3])));
 		// Also do something about the owner?????? Problem is a circular dependency
 
