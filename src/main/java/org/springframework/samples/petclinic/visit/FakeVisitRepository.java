@@ -20,7 +20,10 @@ public class FakeVisitRepository implements VisitRepository{
 	@Override
 	public void save(Visit visit) {
 		visitMap.put(visit.getId(), visit);
-		
+	}
+	
+	public int getVisitId(Visit visit) {
+		return visit.getId();
 	}
 
 	@Override
