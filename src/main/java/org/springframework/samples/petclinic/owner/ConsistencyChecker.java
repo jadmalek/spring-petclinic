@@ -78,9 +78,5 @@ public class ConsistencyChecker {
         }
 		return inconsistencies;
     }
-	public static void main(String[] args) {
-		ConsistencyChecker cc = new ConsistencyChecker();
-		cc.checkOwnerConsistency();
-	}
 
 }
