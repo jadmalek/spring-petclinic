@@ -7,15 +7,12 @@ import org.springframework.stereotype.Component;
 
 import com.opencsv.CSVReader;
 
-import hashGenerator.HashGenerator;
-
 @Component
 public class ConsistencyChecker {
 	
 	@Scheduled(fixedDelay = 5000)
     public int checkOwnerConsistency() {//comparing hash of columns
     	int inconsistencies = 0;
-    	HashGenerator hash = new HashGenerator();
     	OwnerHashUpdater hashUpdater = new OwnerHashUpdater();
 		
 		try {
@@ -23,7 +20,7 @@ public class ConsistencyChecker {
 	    	String csvCurrent;
 	    	String hashRecord = "";
             
-			csvCurrent = hash.computeHash(hashUpdater.appendHashedRows());
+	    	csvCurrent = hashUpdater.chainHashContent();
 			
 			for(String[] actual : hashReader) {
 				hashRecord = actual[0];
@@ -36,7 +33,7 @@ public class ConsistencyChecker {
 		    }
 			
 			hashReader.close();
-			
+
 			if (inconsistencies == 0) 
             	System.out.println("No inconsistencies across former owners table dataset.");
 			
@@ -49,7 +46,6 @@ public class ConsistencyChecker {
 	@Scheduled(fixedDelay = 5000)
 	public int checkPetsConsistency() {//comparing hash of columns
     	int inconsistencies = 0;
-    	HashGenerator hash = new HashGenerator();
     	PetHashUpdater hashUpdater = new PetHashUpdater();
 		
 		try {
@@ -57,7 +53,7 @@ public class ConsistencyChecker {
 	    	String csvCurrent;
 	    	String hashRecord = "";
             
-			csvCurrent = hash.computeHash(hashUpdater.appendHashedRows());
+			csvCurrent = hashUpdater.chainHashContent();
 			
 			for(String[] actual : hashReader) {
 				hashRecord = actual[0];
@@ -78,9 +74,5 @@ public class ConsistencyChecker {
         }
 		return inconsistencies;
     }
-	public static void main(String[] args) {
-		ConsistencyChecker cc = new ConsistencyChecker();
-		cc.checkOwnerConsistency();
-	}
 
 }

@@ -11,14 +11,13 @@ import hashGenerator.HashGenerator;
 
 public class OwnerHashUpdater {
 	
-    public String appendHashedRows() {//collects rows, hashes them, appends them and returns
+    public String chainHashContent() {//collects rows, hashes them, appends them, hashes them again and returns
     	String hashContent = "";
+    	HashGenerator hash = new HashGenerator();
     	
     	try {
     		CSVReader reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
-    		HashGenerator hash = new HashGenerator();
 
-    		
     		for(String[] actual : reader) {
     			ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(actual));
     			String row = arrayList.toString();
@@ -29,15 +28,15 @@ public class OwnerHashUpdater {
     	}catch(Exception e) {
             System.out.print("Error " + e.getMessage());
         }
-        return hashContent;
+    	String secondHash = hash.computeHash(hashContent);
+        return secondHash;
     }
     
     public void storeHashRecord() {//stores/update hashrecord
     	String filename ="hash-record/owners.csv";
         try {
             FileWriter fw = new FileWriter(filename);
-            HashGenerator hash = new HashGenerator();
-    		String hashContent = hash.computeHash(appendHashedRows());//second hash
+    		String hashContent = chainHashContent();
     			fw.append(hashContent);
 				fw.append('\n');
 
