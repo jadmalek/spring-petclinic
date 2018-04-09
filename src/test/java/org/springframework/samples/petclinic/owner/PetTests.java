@@ -34,7 +34,7 @@ public class PetTests {
 	public void testSetAndGetBirthDate() {
 		pet.setBirthDate(this.birthDate);
 		Date resultOfGetDate = pet.getBirthDate();
-		assertEquals(this.birthDate, resultOfGetDate);
+		assertEquals(resultOfGetDate, this.birthDate);
 	}
 
 	@Test
@@ -45,7 +45,7 @@ public class PetTests {
 		walrus.setName("Alex Garland");
 		pet.setType(walrus);
 		PetType resultOfGetType = pet.getType();
-		assertEquals(walrus.getName(), resultOfGetType.getName());
+		assertEquals(resultOfGetType.getName(), walrus.getName());
 	}
 
 	@Test
@@ -58,10 +58,10 @@ public class PetTests {
 		//Attach the newly created owner to the pet
 		pet.setOwner(amandeepBhandal);
 		Owner resultOfGetOwner = pet.getOwner();
-		assertEquals(resultOfGetOwner.getAddress(), "Off-world Colony");
-		assertEquals(resultOfGetOwner.getCity(), "Beirut");
-		assertEquals(resultOfGetOwner.getTelephone(), "514-333-3333");
-		assertEquals(resultOfGetOwner.getPetsInternal().size(), 0);
+		assertEquals("Off-world Colony", resultOfGetOwner.getAddress());
+		assertEquals("Beirut", resultOfGetOwner.getCity());
+		assertEquals("514-333-3333", resultOfGetOwner.getTelephone());
+		assertEquals(0, resultOfGetOwner.getPetsInternal().size());
 	}
 
 	@Test
@@ -70,7 +70,7 @@ public class PetTests {
 		Set<Visit> visitsForTesting = new LinkedHashSet<>();
 		pet.setVisitsInternal(visitsForTesting);
 		Set<Visit> resultOfGetVisitsInternal = pet.getVisitsInternal();
-		assertEquals(visitsForTesting.size(), resultOfGetVisitsInternal.size());
+		assertEquals(resultOfGetVisitsInternal.size(), visitsForTesting.size());
 	}
 
 	@Test
@@ -81,6 +81,6 @@ public class PetTests {
 		List<Visit> resultOfGetVisits = pet.getVisits();
 		Visit onlyVisitInCollection = resultOfGetVisits.iterator().next();
 		assertEquals(1, resultOfGetVisits.size());
-		assertEquals(visitForTesting.getId(), onlyVisitInCollection.getId());
+		assertEquals(onlyVisitInCollection.getId(), visitForTesting.getId());
 	}
 }
