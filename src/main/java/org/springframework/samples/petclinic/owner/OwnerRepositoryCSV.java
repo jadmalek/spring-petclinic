@@ -3,16 +3,15 @@ package org.springframework.samples.petclinic.owner;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+
+import hashGenerator.HashGenerator;
 
 public class OwnerRepositoryCSV implements OwnerRepository{
 	//Owner format: id, firstname, lastname, address, city
@@ -102,6 +101,7 @@ public class OwnerRepositoryCSV implements OwnerRepository{
     	String filename ="new-datastore/owners.csv";
         try {
             FileWriter fw = new FileWriter(filename, true);
+            OwnerHashUpdater hashUpdater = new OwnerHashUpdater();
             	
             //Append the new owner to the csv
             fw.append(Integer.toString(owner.getId()));
@@ -120,6 +120,7 @@ public class OwnerRepositoryCSV implements OwnerRepository{
             fw.flush();
             fw.close();
 
+            hashUpdater.storeHashRecord();
             System.out.println("Shadow write for owner complete.");
         } catch (Exception e) {
             e.printStackTrace();

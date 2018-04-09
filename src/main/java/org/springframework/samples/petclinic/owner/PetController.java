@@ -16,6 +16,7 @@
 package org.springframework.samples.petclinic.owner;
 
 import com.opencsv.CSVReader;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -58,12 +59,14 @@ class PetController {
 	private final OwnerRepository owners;
 	private final PetRepositoryCSV csvPets = new PetRepositoryCSV();
 	private final OwnerRepositoryCSV csvOwners = new OwnerRepositoryCSV();
+	private final PetHashUpdater hashUpdater = new PetHashUpdater();
 
 	@Autowired
 	public PetController(PetRepository pets, OwnerRepository owners) {
 		this.pets = pets;
 		this.owners = owners;
 		forklift();
+		hashUpdater.storeHashRecord();
 	}
 
 	@ModelAttribute("types")
@@ -185,7 +188,7 @@ class PetController {
             e.printStackTrace();
         }
     }
-
+    
     @Async
     @Scheduled(fixedDelay = 5000)
     public Future<Integer> checkConsistency() {

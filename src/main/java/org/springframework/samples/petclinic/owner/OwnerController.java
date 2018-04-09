@@ -17,6 +17,7 @@
 package org.springframework.samples.petclinic.owner;
 
 import com.opencsv.CSVReader;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -46,7 +47,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * @author Juergen Hoeller
@@ -61,11 +61,13 @@ class OwnerController {
     private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm";
     private final OwnerRepository owners;
     private final OwnerRepositoryCSV csvOwners = new OwnerRepositoryCSV();
+    private final OwnerHashUpdater hashUpdater = new OwnerHashUpdater();
 
     @Autowired
     public OwnerController(OwnerRepository clinicService) {
         this.owners = clinicService;
         forklift();
+        hashUpdater.storeHashRecord();
     }
     
     @InitBinder
@@ -251,7 +253,7 @@ class OwnerController {
                     }
                 }
             }
-
+            
             if (inconsistencies == 0)
             	System.out.println("No inconsistencies across former owners table dataset.");
             else
@@ -384,7 +386,6 @@ class OwnerController {
         // execute the preparedstatement
         preparedStmt.execute();
     }
-    
     
 
 }

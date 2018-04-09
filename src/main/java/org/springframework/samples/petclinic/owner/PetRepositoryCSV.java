@@ -101,6 +101,7 @@ public class PetRepositoryCSV implements PetRepository{
 			String filename ="new-datastore/pets.csv";
 				try {
 						FileWriter fw = new FileWriter(filename, true);
+						PetHashUpdater hashUpdater = new PetHashUpdater();
 
 						//Append the new owner to the csv
 						fw.append(Integer.toString(pet.getId()));
@@ -116,14 +117,15 @@ public class PetRepositoryCSV implements PetRepository{
 						fw.append('\n');
 						fw.flush();
 						fw.close();
-
+						
+						hashUpdater.storeHashRecord();
 						System.out.println("Shadow write for pet complete.");
 				} catch (Exception e) {
 						e.printStackTrace();
 				}
 
-	}
-
+	}    
+    
 	private PetType findPetTypeById(Integer id) {
 		CSVReader petTypeReader = null;
 
