@@ -18,14 +18,11 @@ package org.springframework.samples.petclinic.owner;
 
 import com.opencsv.CSVReader;
 
-import hashGenerator.HashGenerator;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -39,8 +36,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.validation.Valid;
 
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -61,7 +56,6 @@ import java.sql.ResultSet;
  */
 @Controller
 @EnableAsync
-@Component
 class OwnerController {
 
     private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm";
@@ -228,27 +222,6 @@ class OwnerController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-    
-    public static String appendHashedRows() {//collects rows, hashes them, appends them and returns
-    	String hashContent = "";
-    	
-    	try {
-    		CSVReader reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
-    		HashGenerator hash = new HashGenerator();
-
-    		
-    		for(String[] actual : reader) {
-    			ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(actual));
-    			String row = arrayList.toString();
-    			hashContent += hash.computeHash(row);
-        		
-         	} 
-    		reader.close();
-    	}catch(Exception e) {
-            System.out.print("Error " + e.getMessage());
-        }
-        return hashContent;
     }
     
     @Async

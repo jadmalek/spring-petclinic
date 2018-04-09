@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.opencsv.CSVReader;
@@ -126,14 +127,34 @@ public class PetRepositoryCSV implements PetRepository{
 				}
 
 	}    
-	
+
+    public static String appendHashedRows() {//collects rows, hashes them, appends them and returns
+    	String hashContent = "";
+    	
+    	try {
+    		CSVReader reader = new CSVReader(new FileReader("new-datastore/pets.csv"));
+    		HashGenerator hash = new HashGenerator();
+
+    		
+    		for(String[] actual : reader) {
+    			ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(actual));
+    			String row = arrayList.toString();
+    			hashContent += hash.computeHash(row);
+        		
+         	} 
+    		reader.close();
+    	}catch(Exception e) {
+            System.out.print("Error " + e.getMessage());
+        }
+        return hashContent;
+    }
+    
     public void storeHashRecord() {//stores/update hashvalue
     	String filename ="hash-record/pets.csv";
         try {
             FileWriter fw = new FileWriter(filename);
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
             HashGenerator hash = new HashGenerator();
-    		String hashContent = hash.computeHash(PetController.appendHashedRows());//second hash
+    		String hashContent = hash.computeHash(appendHashedRows());//second hash
     			fw.append(hashContent);
 				fw.append('\n');
 

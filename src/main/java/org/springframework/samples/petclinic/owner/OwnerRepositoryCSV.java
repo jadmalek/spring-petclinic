@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -95,14 +96,33 @@ public class OwnerRepositoryCSV implements OwnerRepository{
 		return owner;
 	}
 	
+    public static String appendHashedRows() {//collects rows, hashes them, appends them and returns
+    	String hashContent = "";
+    	
+    	try {
+    		CSVReader reader = new CSVReader(new FileReader("new-datastore/owners.csv"));
+    		HashGenerator hash = new HashGenerator();
+
+    		
+    		for(String[] actual : reader) {
+    			ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(actual));
+    			String row = arrayList.toString();
+    			hashContent += hash.computeHash(row);
+        		
+         	} 
+    		reader.close();
+    	}catch(Exception e) {
+            System.out.print("Error " + e.getMessage());
+        }
+        return hashContent;
+    }
     
     public void storeHashRecord() {//stores/update hashrecord
     	String filename ="hash-record/owners.csv";
         try {
             FileWriter fw = new FileWriter(filename);
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
             HashGenerator hash = new HashGenerator();
-    		String hashContent = hash.computeHash(OwnerController.appendHashedRows());//second hash
+    		String hashContent = hash.computeHash(appendHashedRows());//second hash
     			fw.append(hashContent);
 				fw.append('\n');
 

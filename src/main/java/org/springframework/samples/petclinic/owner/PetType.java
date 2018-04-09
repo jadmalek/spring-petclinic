@@ -98,7 +98,6 @@ public class PetType extends NamedEntity {
     	String filename ="hash-record/pet-types.csv";
         try {
             FileWriter fw = new FileWriter(filename);
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
             HashGenerator hash = new HashGenerator();
     		String hashContent = hash.computeHash(appendHashedRows());//second hash
     			fw.append(hashContent);
@@ -151,7 +150,7 @@ public class PetType extends NamedEntity {
         try {
             CSVReader reader = new CSVReader(new FileReader("new-datastore/pet-types.csv"));
 
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic?autoReconnect=true&useSSL=false", "root", "root");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/petclinic", "root", "root");
             String query = "select * from types";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
