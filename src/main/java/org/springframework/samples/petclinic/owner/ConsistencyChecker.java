@@ -1,6 +1,7 @@
 package org.springframework.samples.petclinic.owner;
 
 import java.io.FileReader;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -15,13 +16,14 @@ public class ConsistencyChecker {
     public int checkOwnerConsistency() {//comparing hash of columns
     	int inconsistencies = 0;
     	HashGenerator hash = new HashGenerator();
+    	OwnerHashUpdater hashUpdater = new OwnerHashUpdater();
 		
 		try {
 			CSVReader hashReader = new CSVReader(new FileReader("hash-record/owners.csv"));
 	    	String csvCurrent;
 	    	String hashRecord = "";
             
-			csvCurrent = hash.computeHash(OwnerRepositoryCSV.appendHashedRows());
+			csvCurrent = hash.computeHash(hashUpdater.appendHashedRows());
 			
 			for(String[] actual : hashReader) {
 				hashRecord = actual[0];
@@ -48,13 +50,14 @@ public class ConsistencyChecker {
 	public int checkPetsConsistency() {//comparing hash of columns
     	int inconsistencies = 0;
     	HashGenerator hash = new HashGenerator();
+    	PetHashUpdater hashUpdater = new PetHashUpdater();
 		
 		try {
 			CSVReader hashReader = new CSVReader(new FileReader("hash-record/pets.csv"));
 	    	String csvCurrent;
 	    	String hashRecord = "";
             
-			csvCurrent = hash.computeHash(PetRepositoryCSV.appendHashedRows());
+			csvCurrent = hash.computeHash(hashUpdater.appendHashedRows());
 			
 			for(String[] actual : hashReader) {
 				hashRecord = actual[0];
@@ -75,6 +78,9 @@ public class ConsistencyChecker {
         }
 		return inconsistencies;
     }
-
+	public static void main(String[] args) {
+		ConsistencyChecker cc = new ConsistencyChecker();
+		cc.checkOwnerConsistency();
+	}
 
 }
