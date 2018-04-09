@@ -1,22 +1,35 @@
 package org.springframework.samples.petclinic.owner;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
+import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.core.style.ToStringCreator;
+import org.springframework.samples.petclinic.visit.Visit;
 
 public class OwnerTest {
 
 	private Owner ownerInstance;
+	private Owner ownerForMocking;
 
 	@Before
 	public void setUp() {
 		this.ownerInstance = new Owner();
+		this.ownerForMocking = new Owner();
+		this.ownerForMocking.setId(1);
+		this.ownerForMocking.setFirstName("Mark");
+		this.ownerForMocking.setLastName("Ghantous");
+		this.ownerForMocking.setAddress("647 Abbey Road");
+		this.ownerForMocking.setCity("Amoun");
+		this.ownerForMocking.setTelephone("345123222");
 	}
 	
 	
@@ -110,4 +123,79 @@ public class OwnerTest {
 		ownerInstance.setAddress("123 FakeStreet");
 		assertEquals("123 FakeStreet", ownerInstance.getAddress());
 	}
+	
+	//Mocking out pet dependency of owners for test pourposes
+	@Test
+    public void testMockPets() {
+		//Mock all the different attributes of a Pet in order mock the Pet object as a whole
+		//Date
+        Date zebraBirthday = new Date(1992, 3, 9);
+
+        //Type
+		PetType zebra = mock(PetType.class);
+        when(zebra.getName()).thenReturn("Zebra");
+        
+        //Type Id
+        when(zebra.getId()).thenReturn(96);
+
+        //A couple of visits for the pet in question
+        Set<Visit> zebraVisits = new LinkedHashSet<>();
+        Visit mockFirstZebraVisit = mock(Visit.class);
+        Visit mockSecondZebraVisit = mock(Visit.class);
+        zebraVisits.add(mockFirstZebraVisit);
+        zebraVisits.add(mockSecondZebraVisit);
+
+        //Creation of dog
+        Pet mockZebra = mock(Pet.class);
+        //Stub mock object constructor call
+        when(mockZebra.isNew()).thenReturn(true);
+        when(mockZebra.getBirthDate()).thenReturn(zebraBirthday);
+        when(mockZebra.getType()).thenReturn(zebra);
+        when(mockZebra.getName()).thenReturn("Jonathan Glazer");
+        when(mockZebra.getOwner()).thenReturn(this.ownerForMocking);
+        when(mockZebra.getVisitsInternal()).thenReturn(zebraVisits);
+        
+		//Mock all the different attributes of a Pet in order mock the Pet object as a whole
+		//Date
+        Date dogBirthday = new Date(1991, 7, 10);
+
+        //Type
+		PetType dog = mock(PetType.class);
+        when(dog.getName()).thenReturn("Dog");
+        
+        //Type Id
+        when(dog.getId()).thenReturn(102);
+
+        //A couple of visits for the pet in question
+        Set<Visit> dogVisits = new LinkedHashSet<>();
+        Visit mockFirstDogVisit = mock(Visit.class);
+        Visit mockSecondDogVisit = mock(Visit.class);
+        dogVisits.add(mockFirstDogVisit);
+        dogVisits.add(mockSecondDogVisit);
+
+        //Creation of dog
+        Pet mockDog = mock(Pet.class);
+        //Stub mock object constructor call
+        when(mockDog.isNew()).thenReturn(true);
+        when(mockDog.getBirthDate()).thenReturn(dogBirthday);
+        when(mockDog.getType()).thenReturn(dog);
+        when(mockDog.getName()).thenReturn("Paul Thomas Anderson");
+        when(mockDog.getOwner()).thenReturn(this.ownerForMocking);
+        when(mockDog.getVisitsInternal()).thenReturn(dogVisits);
+       
+        //Add the mocks pets to the owner
+        this.ownerForMocking.addPet(mockZebra);
+        this.ownerForMocking.addPet(mockDog);
+
+        //Ensure that the inserted pets are equal by comparing the name and Id of the pets
+        assertThat(this.ownerForMocking.getPets().get(0)).isEqualTo(mockZebra);
+        assertThat(this.ownerForMocking.getPets().get(0).getName()).isEqualTo("Jonathan Glazer");
+        assertThat(this.ownerForMocking.getPets().get(0).getType().getId() == 96);
+        assertThat(this.ownerForMocking.getPets().get(0).getType().getName()).isEqualTo("Zebra");
+        assertThat(this.ownerForMocking.getPets().get(1)).isEqualTo(mockDog);
+        assertThat(this.ownerForMocking.getPets().get(1).getName()).isEqualTo("Paul Thomas Anderson");
+        assertThat(this.ownerForMocking.getPets().get(1).getType().getId() == 102);
+        assertThat(this.ownerForMocking.getPets().get(1).getType().getName()).isEqualTo("Dog");
+        
+    }
 }
