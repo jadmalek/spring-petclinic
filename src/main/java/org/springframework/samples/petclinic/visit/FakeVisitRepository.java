@@ -22,10 +22,6 @@ public class FakeVisitRepository implements VisitRepository{
 		visitMap.put(visit.getId(), visit);
 	}
 	
-	public int getVisitId(Visit visit) {
-		return visit.getId();
-	}
-
 	@Override
 	public List<Visit> findByPetId(Integer petId) {
 		List<Visit> visitsWithPetId = new ArrayList<Visit>();

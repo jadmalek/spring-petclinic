@@ -194,20 +194,24 @@ public class OwnerControllerTests {
     	BindingResult result = mock(BindingResult.class);
     	Model model = mock(Model.class);
     	
-    	//internally this will use the fake owner's repository's save method
+    	//internally this will use the fake owners repository's save method
     	ownerController.processCreationForm(george, result);
-    	assertEquals(george.getId().intValue(), fakeOwners.getOwnerId(george));
-      	 
-    	//internally this will use the fake owner's repository's save method
+    	assertEquals(george.getId().intValue(), fakeOwners.findById(1).getId().intValue());
+    	assertEquals("Madison", fakeOwners.findById(1).getCity());
+    	assertEquals("6085551023", fakeOwners.findById(1).getTelephone());
+      	
+    	//internally this will use the fake owners repository's save method
     	ownerController.processUpdateOwnerForm(george, result, george.getId());
-    	assertEquals(george.getId().intValue(), fakeOwners.getOwnerId(george));
-    	
-    	//internally this will use the fake owner's repository's findById() method
+    	assertEquals(george.getId().intValue(), fakeOwners.findById(1).getId().intValue());
+    	assertEquals("Madison", fakeOwners.findById(1).getCity());
+    	assertEquals("6085551023", fakeOwners.findById(1).getTelephone());
+      	
+    	//internally this will use the fake owners repository's findById() method
     	ownerController.initUpdateOwnerForm(george.getId(), model);
     	assertEquals(george.getAddress(), fakeOwners.findById(george.getId()).getAddress());
     	assertEquals(george.getLastName(), fakeOwners.findById(george.getId()).getLastName());
         
-    	//internally this will use the fake owner's repository's findById() method
+    	//internally this will use the fake owners repository's findById() method
     	ownerController.showOwner(george.getId());
     	assertEquals(george.getAddress(), fakeOwners.findById(george.getId()).getAddress());
     	assertEquals(george.getLastName(), fakeOwners.findById(george.getId()).getLastName());
