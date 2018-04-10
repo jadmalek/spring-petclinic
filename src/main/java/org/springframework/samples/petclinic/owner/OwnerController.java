@@ -174,8 +174,10 @@ class OwnerController {
     @Async
     public void shadowReadConsistencyCheck(Collection<Owner> expected, Collection<Owner> actual) {
     	Iterator<Owner> expectedOwner = expected.iterator();
-    	for (Owner actualOwner : actual){
-    		shadowReadConsistencyCheck(expectedOwner.next(), actualOwner);
+    	if (actual.size() == 0){
+	    	for (Owner actualOwner : actual){
+	    		shadowReadConsistencyCheck(expectedOwner.next(), actualOwner);
+	    	}
     	}
     }
 
