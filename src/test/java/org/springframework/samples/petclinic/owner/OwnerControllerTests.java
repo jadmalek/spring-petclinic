@@ -1,8 +1,11 @@
 package org.springframework.samples.petclinic.owner;
 
 import static org.hamcrest.Matchers.hasProperty;
+import org.springframework.ui.Model;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -19,8 +22,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.samples.petclinic.owner.Owner;
 import org.springframework.samples.petclinic.owner.OwnerController;
 import org.springframework.samples.petclinic.owner.OwnerRepository;
+import org.springframework.samples.petclinic.visit.FakeVisitRepository;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.validation.BindingResult;
+
+import Model;
 
 /**
  * Test class for {@link OwnerController}
@@ -173,6 +180,37 @@ public class OwnerControllerTests {
             .andExpect(model().attribute("owner", hasProperty("city", is("Madison"))))
             .andExpect(model().attribute("owner", hasProperty("telephone", is("6085551023"))))
             .andExpect(view().name("owners/ownerDetails"));
+    }
+    
+    @Test
+    public void testMockOwnerRepository() {
+    	//Use the fake repository to break dependency of owner controller on owners repository
+    	FakeOwnerRepository fakeOwners = new FakeOwnerRepository();
+
+    	//Creation of owner controller with fake owner repository and instead of mocked owners by OwnerMVC
+    	OwnerController ownerController = new OwnerController(fakeOwners);
+    	
+    	//Mocking mapping-related objects
+    	BindingResult result = mock(BindingResult.class);
+    	Model model = mock(Model.class);
+    	
+    	//internally this will use the fake owner's repository's save method
+    	ownerController.processCreationForm(george, result);
+    	assertEquals(george.getId().intValue(), fakeOwners.getOwnerId(george));
+      	 
+    	//internally this will use the fake owner's repository's save method
+    	ownerController.processUpdateOwnerForm(george, result, george.getId());
+    	assertEquals(george.getId().intValue(), fakeOwners.getOwnerId(george));
+    	
+    	//internally this will use the fake owner's repository's findById() method
+    	ownerController.initUpdateOwnerForm(george.getId(), model);
+    	assertEquals(george.getAddress(), fakeOwners.findById(george.getId()).getAddress());
+    	assertEquals(george.getLastName(), fakeOwners.findById(george.getId()).getLastName());
+        
+    	//internally this will use the fake owner's repository's findById() method
+    	ownerController.showOwner(george.getId());
+    	assertEquals(george.getAddress(), fakeOwners.findById(george.getId()).getAddress());
+    	assertEquals(george.getLastName(), fakeOwners.findById(george.getId()).getLastName());
     }
 
 }

@@ -40,5 +40,9 @@ public class FakeOwnerRepository implements OwnerRepository{
 	public void save(Owner owner) {
 		ownerMap.put(owner.getId(), owner);	
 	}
+	
+	public int getOwnerId(Owner owner) {
+		return owner.getId();
+	}
 
 }

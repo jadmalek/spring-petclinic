@@ -103,8 +103,6 @@ public class VisitControllerTests {
     	
     	//Check that save method was exectued by checking that the id of the visit has now been stored
     	assertEquals(visit.getId().intValue(), fakeVisits.getVisitId(visit));
-    	
-   	
     }
    
 }
