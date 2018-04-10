@@ -53,7 +53,6 @@ public class TestMigrationConsistencyChecking {
     
     Owner owner;
     Pet pet;
-    Visit visit;
     
     @Before
     public void setup() {
@@ -75,11 +74,6 @@ public class TestMigrationConsistencyChecking {
     	pet.setId(1);
     	pet.setBirthDate(new Date());
     	pet.setName("Buddy");
-    	
-    	visit = new Visit();
-        visit.setId(1);
-        visit.setDescription("An annual checkup");
-        visit.setDate(new Date());
     	
     }
 
@@ -105,12 +99,11 @@ public class TestMigrationConsistencyChecking {
 
 		//shadow writes: any changes are written directly to old
 		//consistency should be checked after each write
-        owners.save(owner);
-        pets.save(pet);
-        visits.save(visit);
+        ownerController.writeToFile(owner);
+        petController.writeToFile(pet);
+        
         assertEquals(0, ownerController.checkConsistency().get().intValue());
         assertEquals(0, petController.checkConsistency().get().intValue());
-        assertEquals(0, visitController.checkConsistency().get().intValue());
 
 		//shadow Reads for validation (read will access both old and new)
         assertEquals(ownerController.readFromMySqlDataBase(1), ownerController.readFromNewDataStore(1));

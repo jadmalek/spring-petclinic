@@ -274,45 +274,9 @@ class OwnerController {
     	return content.size() + 1;
     }
 
-    public void writeToFile(String firstName, String lastName, String address, String city, String telephone) {
-    	String filename ="new-datastore/owners.csv";
-        try {
-
-            int ownerId = csvOwners.getCSVRow();
-
-            Owner owner = new Owner();
-            owner.setId(ownerId);
-            owner.setFirstName(firstName);
-            owner.setLastName(lastName);
-            owner.setAddress(address);
-            owner.setCity(city);
-            owner.setTelephone(telephone);
-            //this.owners.save(owner);
-          
-            FileWriter fw = new FileWriter(filename, true);
-            writeToMySqlDataBase(owner);
-
-            //Append the new owner to the csv
-            fw.append(Integer.toString(ownerId));
-            fw.append(',');
-            fw.append(firstName);
-            fw.append(',');
-            fw.append(lastName);
-            fw.append(',');
-            fw.append(address);
-            fw.append(',');
-            fw.append(city);
-            fw.append(',');
-            fw.append(telephone);
-            fw.append(',');
-            fw.append('\n');
-            fw.flush();
-            fw.close();
-
-            System.out.println("Shadow write for owner complete.");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void writeToFile(Owner owner) {
+    	owners.save(owner);
+    	csvOwners.save(owner);
     }
 
 
