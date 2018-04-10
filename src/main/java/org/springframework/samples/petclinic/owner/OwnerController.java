@@ -61,11 +61,13 @@ class OwnerController {
     private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm";
     private final OwnerRepository owners;
     private final OwnerRepositoryCSV csvOwners = new OwnerRepositoryCSV();
+    private final OwnerHashUpdater hashUpdater = new OwnerHashUpdater();
 
     @Autowired
     public OwnerController(OwnerRepository clinicService) {
         this.owners = clinicService;
         forklift();
+        hashUpdater.storeHashRecord();
     }
     
     @InitBinder

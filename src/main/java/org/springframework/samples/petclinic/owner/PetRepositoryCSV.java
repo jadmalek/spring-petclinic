@@ -10,13 +10,10 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
-
-import hashGenerator.HashGenerator;
 
 //Pet csv format: Id, Name, Birth date, typeId, OwnerId
 
@@ -104,6 +101,7 @@ public class PetRepositoryCSV implements PetRepository{
 			String filename ="new-datastore/pets.csv";
 				try {
 						FileWriter fw = new FileWriter(filename, true);
+						PetHashUpdater hashUpdater = new PetHashUpdater();
 
 						//Append the new owner to the csv
 						fw.append(Integer.toString(pet.getId()));
@@ -120,51 +118,13 @@ public class PetRepositoryCSV implements PetRepository{
 						fw.flush();
 						fw.close();
 						
-						storeHashRecord();
+						hashUpdater.storeHashRecord();
 						System.out.println("Shadow write for pet complete.");
 				} catch (Exception e) {
 						e.printStackTrace();
 				}
 
 	}    
-
-    public static String appendHashedRows() {//collects rows, hashes them, appends them and returns
-    	String hashContent = "";
-    	
-    	try {
-    		CSVReader reader = new CSVReader(new FileReader("new-datastore/pets.csv"));
-    		HashGenerator hash = new HashGenerator();
-
-    		
-    		for(String[] actual : reader) {
-    			ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(actual));
-    			String row = arrayList.toString();
-    			hashContent += hash.computeHash(row);
-        		
-         	} 
-    		reader.close();
-    	}catch(Exception e) {
-            System.out.print("Error " + e.getMessage());
-        }
-        return hashContent;
-    }
-    
-    public void storeHashRecord() {//stores/update hashvalue
-    	String filename ="hash-record/pets.csv";
-        try {
-            FileWriter fw = new FileWriter(filename);
-            HashGenerator hash = new HashGenerator();
-    		String hashContent = hash.computeHash(appendHashedRows());//second hash
-    			fw.append(hashContent);
-				fw.append('\n');
-
-            fw.flush();
-            fw.close();
-            System.out.println("CSV file for the pets table has been created successfully.");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
     
 	private PetType findPetTypeById(Integer id) {
 		CSVReader petTypeReader = null;
