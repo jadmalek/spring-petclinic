@@ -1,5 +1,6 @@
 package org.springframework.samples.petclinic.owner;
 
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -18,10 +19,12 @@ import org.springframework.samples.petclinic.owner.PetRepository;
 import org.springframework.samples.petclinic.owner.VisitController;
 import org.springframework.samples.petclinic.visit.Visit;
 import org.springframework.samples.petclinic.visit.VisitRepository;
+import org.springframework.samples.petclinic.visit.FakeVisitRepository;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.validation.BindingResult;
 
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 
@@ -80,4 +83,28 @@ public class VisitControllerTests {
             .andExpect(view().name("pets/createOrUpdateVisitForm"));
         verify(pets).findById(anyInt()); //Ensure that a pet gets loaded per visit
     }
+    
+    @Test
+    public void testMockVisitRepository() {
+    	//Use the fake repository to break dependency of visit controller on visit repository
+    	FakeVisitRepository fakeVisits = new FakeVisitRepository();
+    	
+    	//Creation of visit controller with fake visit repository and mocked pets by mockMVC
+    	VisitController visitController = new VisitController(fakeVisits, pets);
+    	
+    	//Creation of visit to add to visits repo and mocked result to invoke a visit controller method that involves
+    	//the use of the visits repo
+    	Visit visit = mock(Visit.class);
+    	when(visit.getId()).thenReturn(22);
+    	when(visit.getPetId()).thenReturn(1);
+    	BindingResult result = mock(BindingResult.class);
+    	when(result.hasErrors()).thenReturn(false);
+    	
+    	//internally this will use the fake visit repository's save method; other methods rely on the mocked pets repository
+    	visitController.processNewVisitForm(visit, result);
+    	
+    	//Check that save method was executed by checking that the id of the visit has now been stored
+    	assertEquals(visit.getId().intValue(), fakeVisits.findByPetId(1).get(0).getId().intValue());
+    }
+   
 }
