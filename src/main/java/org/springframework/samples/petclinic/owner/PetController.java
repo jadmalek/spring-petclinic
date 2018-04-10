@@ -59,12 +59,14 @@ class PetController {
 	private final OwnerRepository owners;
 	private final PetRepositoryCSV csvPets = new PetRepositoryCSV();
 	private final OwnerRepositoryCSV csvOwners = new OwnerRepositoryCSV();
+	private final PetHashUpdater hashUpdater = new PetHashUpdater();
 
 	@Autowired
 	public PetController(PetRepository pets, OwnerRepository owners) {
 		this.pets = pets;
 		this.owners = owners;
 		forklift();
+		hashUpdater.storeHashRecord();
 	}
 
 	@ModelAttribute("types")

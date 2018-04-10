@@ -20,9 +20,8 @@ public class FakeVisitRepository implements VisitRepository{
 	@Override
 	public void save(Visit visit) {
 		visitMap.put(visit.getId(), visit);
-		
 	}
-
+	
 	@Override
 	public List<Visit> findByPetId(Integer petId) {
 		List<Visit> visitsWithPetId = new ArrayList<Visit>();
