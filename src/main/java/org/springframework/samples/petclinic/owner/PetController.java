@@ -249,48 +249,9 @@ class PetController {
         preparedStmt.execute();
     }
 
-	public void writeToFile(String name, Date birthDate, int typeId, int ownerId) {
-		String filename = "new-datastore/pets.csv";
-		try {
-			/*
-			int petId = getCSVRow();
-			Pet pet = new Pet();
-			pet.setId(petId);
-			pet.setName(name);
-			pet.setBirthDate(birthDate);
-			pet.setOwner(this.owners.findById(ownerId));
-			pet.setType(this.pets.findPetTypes().get(typeId));
-			this.pets.save(pet);*/
-
-			int petId = getCSVRow();
-
-			java.sql.Date sqlBirthDate = new java.sql.Date(birthDate.getTime());
-			writeToMySqlDataBase(petId, name, sqlBirthDate, typeId, ownerId);
-			
-			FileWriter fw = new FileWriter(filename, true);
-
-
-			//writeToMySqlDataBase(petId, name, sqlBirthDate, typeId, ownerId);
-
-			// Append the new owner to the csv
-			fw.append(Integer.toString(petId));
-			fw.append(',');
-			fw.append(name);
-			fw.append(',');
-			fw.append(sqlBirthDate.toString());
-			fw.append(',');
-			fw.append(Integer.toString(typeId));
-			fw.append(',');
-			fw.append(Integer.toString(ownerId));
-			fw.append(',');
-			fw.append('\n');
-			fw.flush();
-			fw.close();
-
-			System.out.println("Shadow write complete.");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	public void writeToFile(Pet pet) {
+		pets.save(pet);
+		csvPets.save(pet);
 	}
 
     private int getCSVRow() throws Exception {

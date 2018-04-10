@@ -2,6 +2,7 @@ package org.springframework.samples.petclinic.owner;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
 
@@ -10,21 +11,38 @@ import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.samples.petclinic.vet.VetRepositoryCSV;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.samples.petclinic.owner.OwnerController;
 import org.springframework.samples.petclinic.owner.OwnerRepository;
 import org.springframework.samples.petclinic.vet.VetRepository;
 import org.springframework.samples.petclinic.vet.Specialty;
 import org.springframework.samples.petclinic.vet.Vet;
 import org.springframework.samples.petclinic.vet.VetController;
+import org.springframework.samples.petclinic.visit.Visit;
 import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.stereotype.Service;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@EnableAsync
+@RunWith(SpringRunner.class)
+@DataJpaTest(includeFilters = @ComponentScan.Filter(Service.class))
+@AutoConfigureTestDatabase(replace= AutoConfigureTestDatabase.Replace.NONE)
 public class TestMigrationConsistencyChecking {
+	@MockBean
     private OwnerRepository owners;
+	
+	@MockBean
     private PetRepository pets;
+	
+	@MockBean
     private VisitRepository visits;
-    private VetRepository vets;
+    
+	private VetRepository vets;
+    
     private PetType petType;
     private Specialty specialty;
 
@@ -32,7 +50,10 @@ public class TestMigrationConsistencyChecking {
     private PetController petController;
     private VisitController visitController;
     private VetController vetController;
-
+    
+    Owner owner;
+    Pet pet;
+    
     @Before
     public void setup() {
     	ownerController = new OwnerController(owners);
@@ -41,6 +62,19 @@ public class TestMigrationConsistencyChecking {
     	vetController = new VetController(vets);
     	petType = new PetType();
     	specialty = new Specialty();
+    	
+    	owner = new Owner();
+    	owner.setFirstName("Bob");
+    	owner.setLastName("Bobby");
+    	owner.setAddress("808 Roberts");
+    	owner.setCity("Bobbytown");
+    	owner.setTelephone("545-555-5555");
+    	
+    	pet = new Pet();
+    	pet.setId(1);
+    	pet.setBirthDate(new Date());
+    	pet.setName("Buddy");
+    	
     }
 
     @Test
@@ -65,28 +99,16 @@ public class TestMigrationConsistencyChecking {
 
 		//shadow writes: any changes are written directly to old
 		//consistency should be checked after each write
-        ownerController.writeToFile("Bob", "Bobby", "808 Roberts", "Bobbytown", "545-555-5555");
-        petType.writeToFile("Doggo");
-        petController.writeToFile("Buddy", new Date(), 1, 1);
-        visitController.writeToFile(1, new Date(), "An annual checkup");
-        vetController.writeToFile("Sophia", "Squash");
-        specialty.writeToFileSpecialties("Specialty1");
-        specialty.writeToFileVetSpecialties(1, 1);
+        ownerController.writeToFile(owner);
+        petController.writeToFile(pet);
+        
         assertEquals(0, ownerController.checkConsistency().get().intValue());
         assertEquals(0, petController.checkConsistency().get().intValue());
-        assertEquals(0, visitController.checkConsistency().get().intValue());
-        assertEquals(0, vetController.checkConsistency().get().intValue());
-        assertEquals(0, petType.checkConsistency().get().intValue());
-        assertEquals(0, specialty.checkSpecialtiesConsistency().get().intValue());
-        assertEquals(0, specialty.checkVetSpecialtiesConsistency().get().intValue());
 
 		//shadow Reads for validation (read will access both old and new)
         assertEquals(ownerController.readFromMySqlDataBase(1), ownerController.readFromNewDataStore(1));
         assertEquals(petController.readFromMySqlDataBase(1), petController.readFromNewDataStore(1));
-        assertEquals(petType.readFromMySqlDataBase(1), petType.readFromNewDataStore(1));
         assertEquals(visitController.readFromMySqlDataBase(1), visitController.readFromNewDataStore(1));
-        assertEquals(vetController.readFromMySqlDataBase(1), vetController.readFromNewDataStore(1));
-        assertEquals(specialty.readFromMySqlDataBaseSpecialties(1), specialty.readFromNewDataStore(1));
         
 		//read and write from new datastore
 

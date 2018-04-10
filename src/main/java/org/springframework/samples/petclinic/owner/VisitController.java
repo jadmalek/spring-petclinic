@@ -189,40 +189,8 @@ class VisitController {
         preparedStmt.execute();
     }
 
-    public void writeToFile(int petId, Date visitDate, String description) {
-    	String filename ="new-datastore/visits.csv";
-        try {
-        	int visitId = getCSVRow();
-        	Visit visit = new Visit();
-        	visit.setId(visitId);
-        	visit.setDate(visitDate);
-        	visit.setPetId(petId);
-        	visit.setDescription(description);
-        	//this.visits.save(visit);
-        	
-            FileWriter fw = new FileWriter(filename, true);
-
-            //Convert the java.util.Date to java.sql.Date
-            java.sql.Date sqlDate = new java.sql.Date(visitDate.getTime());
-
-            writeToMySqlDataBase(visitId, petId, sqlDate, description);
-
-            //Append the new visit to the csv
-            fw.append(Integer.toString(visitId));
-            fw.append(',');
-            fw.append(Integer.toString(petId));
-            fw.append(',');
-            fw.append(sqlDate.toString());
-            fw.append(',');
-            fw.append(description);
-            fw.append('\n');
-            fw.flush();
-            fw.close();
-
-            System.out.println("Shadow write for visits complete.");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void writeToFile(Visit visit) {
+    	visits.save(visit);
     }
     
     private int getCSVRow() throws Exception {
