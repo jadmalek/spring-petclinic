@@ -19,6 +19,7 @@ package org.springframework.samples.petclinic.owner;
 import com.opencsv.CSVReader;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.petclinic.dbmigration.ConsistencyLogger;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -35,6 +36,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
 
+import java.io.Console;
 import java.io.FileReader;
 import java.util.Collection;
 import java.util.Iterator;
@@ -88,7 +90,9 @@ class OwnerController {
         if (result.hasErrors()) {
             return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
         } else {
-            this.owners.save(owner);
+        	if(!ConsistencyLogger.shouldSwitchDatastore()) {
+        		this.owners.save(owner);	
+        	}
             this.csvOwners.save(owner);
 
             checkConsistency();
@@ -121,6 +125,10 @@ class OwnerController {
         } else if (results.size() == 1) {
             // 1 owner found
             owner = results.iterator().next();
+            if(ConsistencyLogger.shouldSwitchDatastore()) {
+            	//If we're using the new datastore, re-assign
+            	owner = csvResults.iterator().next();
+            }
             return "redirect:/owners/" + owner.getId();
         } else {
             // multiple owners found
@@ -134,6 +142,10 @@ class OwnerController {
         Owner owner = this.owners.findById(ownerId);
         Owner owner2 = csvOwners.findById(ownerId);
         shadowReadConsistencyCheck(owner, owner2);
+        if(ConsistencyLogger.shouldSwitchDatastore()) {
+        	// If we're using new datastore, reassign owner
+        	owner = owner2;
+        }
         model.addAttribute(owner);
         return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
     }
@@ -144,7 +156,9 @@ class OwnerController {
             return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
         } else {
             owner.setId(ownerId);
-            this.owners.save(owner);
+            if(!ConsistencyLogger.shouldSwitchDatastore()) {
+                this.owners.save(owner);
+            }
             this.csvOwners.save(owner);
             try {
             	this.writeToMySqlDataBase(owner);
@@ -167,9 +181,12 @@ class OwnerController {
     public ModelAndView showOwner(@PathVariable("ownerId") int ownerId) {
         ModelAndView mav = new ModelAndView("owners/ownerDetails");
         Owner expectedOwner = this.owners.findById(ownerId);
-        mav.addObject(expectedOwner);
         Owner actualOwner = this.csvOwners.findById(ownerId);
         shadowReadConsistencyCheck(expectedOwner, actualOwner);
+        if(ConsistencyLogger.shouldSwitchDatastore()) {
+        	expectedOwner = actualOwner;
+        }
+        mav.addObject(expectedOwner);   
         return mav;
     }
 
@@ -186,10 +203,12 @@ class OwnerController {
     @Async
     public Future<Boolean> shadowReadConsistencyCheck(Owner expected, Owner actual) {
     	boolean consistent = actual.isEqualTo(expected);
+    	ConsistencyLogger.logCheck();
     	if (!consistent) {
     		System.out.println("Inconsistency found between Owners" + "\n" +
     								expected.toString() + " and " + actual.toString());
     		csvOwners.updateOwner(expected, actual);
+    		ConsistencyLogger.logInconsistent();
     	}
     	return new AsyncResult<Boolean>(consistent);
     }

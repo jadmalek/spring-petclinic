@@ -17,6 +17,7 @@ package org.springframework.samples.petclinic.owner;
 
 import com.opencsv.CSVReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.petclinic.dbmigration.ConsistencyLogger;
 import org.springframework.samples.petclinic.visit.Visit;
 import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.scheduling.annotation.Async;
@@ -137,7 +138,7 @@ class VisitController {
     @Scheduled(fixedDelay = 5000)
     public Future<Integer> checkConsistency() {
         int inconsistencies = 0;
-
+        
         try {
             CSVReader reader = new CSVReader(new FileReader("new-datastore/visits.csv"));
 
@@ -150,6 +151,7 @@ class VisitController {
                 rs.next();
                 for(int i=0;i<4;i++) {
                     int columnIndex = i+1;
+                    ConsistencyLogger.logCheck();
                     if(!actual[i].equals(rs.getString(columnIndex))) {
                     	System.out.println("Visits Table Consistency Violation!\n" + 
                 				"\n\t expected = " + rs.getString(columnIndex)
@@ -157,6 +159,7 @@ class VisitController {
                     	//fix inconsistency
                     	actual[i] = rs.getString(columnIndex);
                         inconsistencies++;
+                        ConsistencyLogger.logInconsistent();
                     }
                 }
             }
