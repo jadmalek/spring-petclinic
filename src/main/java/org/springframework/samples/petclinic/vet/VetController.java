@@ -17,6 +17,7 @@ package org.springframework.samples.petclinic.vet;
 
 import com.opencsv.CSVReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.petclinic.dbmigration.ConsistencyLogger;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -114,6 +115,7 @@ class VetController {
                 rs.next();
                 for(int i=0;i<3;i++) {
                     int columnIndex = i+1;
+                    ConsistencyLogger.logCheck();
                     if(!actual[i].equals(rs.getString(columnIndex))) {
                     	System.out.println("Vets Table Consistency Violation!\n" +
                 				"\n\t expected = " + rs.getString(columnIndex)
@@ -121,6 +123,7 @@ class VetController {
                     	//fix inconsistency
                     	actual[i] = rs.getString(columnIndex);
                         inconsistencies++;
+                        ConsistencyLogger.logInconsistent();
                     }
                 }
             }

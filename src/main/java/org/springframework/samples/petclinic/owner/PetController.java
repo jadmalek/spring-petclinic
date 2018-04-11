@@ -18,6 +18,7 @@ package org.springframework.samples.petclinic.owner;
 import com.opencsv.CSVReader;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.petclinic.dbmigration.ConsistencyLogger;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -107,7 +108,9 @@ class PetController {
 			model.put("pet", pet);
 			return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 		} else {
-			this.pets.save(pet);
+			if(!ConsistencyLogger.shouldSwitchDatastore()) {
+				this.pets.save(pet);
+			}
 			this.csvPets.save(pet);
 			checkConsistency();
 			return "redirect:/owners/{ownerId}";
@@ -119,6 +122,9 @@ class PetController {
 		Pet pet = this.pets.findById(petId);
 		Pet pet2 = csvPets.findById(petId);
 		shadowReadConsistencyCheck(pet, pet2);
+		if(ConsistencyLogger.shouldSwitchDatastore()) {
+			pet = pet2;
+		}
 		model.put("pet", pet);
 		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 	}
@@ -131,7 +137,9 @@ class PetController {
 			return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 		} else {
 			owner.addPet(pet);
-			this.pets.save(pet);
+			if(!ConsistencyLogger.shouldSwitchDatastore()) {
+				this.pets.save(pet);
+			}
 			this.csvPets.save(pet);
 			checkConsistency();
 			return "redirect:/owners/{ownerId}";
@@ -149,7 +157,9 @@ class PetController {
 	@Async
 	public Future<Boolean> shadowReadConsistencyCheck(Pet expected, Pet actual) {
 		boolean consistent = actual.isEqualTo(expected);
+		ConsistencyLogger.logCheck();
 		if (!consistent) {
+			ConsistencyLogger.logInconsistent();
 			System.out.println("Inconsistency found between Pets" + "\n" +
 									expected.toString() + " and " + actual.toString());
 			//TODO: update the row in the shadowread
